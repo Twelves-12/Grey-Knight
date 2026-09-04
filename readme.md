@@ -1,10 +1,10 @@
-#Grey Knight
+# Grey Knight
 北京理工大学大二计算机学院网站开发小学期作业
 
-##项目概况
-
-###项目名称
+## 项目名称
 《Grey Knight》
 
-###项目类型
+## 项目概况
+
+## 项目类型
 基于 HTML5、CSS3 和 JavaScript 平台的卡牌对战RPG游戏。
