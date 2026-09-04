@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人简介</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, sans-serif;
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            background: #ffffff;
+            display: flex;
+            max-width: 700px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .photo-box {
+            flex: 0 0 280px;
+        }
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .info-box {
+            flex: 1;
+            padding: 40px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 24px;
+        }
+        /* 姓名、职务、爱好标题统一字号 */
+        .name, .job, .hobbies-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #222;
+        }
+        .hobby-tags {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap:10px;
+        }
+        .hobby-tags span {
+            background-color: #e8f0fe;
+            color:#366ed8;
+            padding:6px 14px;
+            border-radius: 999px;
+            font-size:0.9rem;
+        }
+        @media (max-width:600px) {
+            .card {
+                flex-direction: column;
+            }
+            .photo-box {
+                flex: none;
+                height: 260px;
+            }
+            .info-box {
+                padding:24px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="photo-box">
+        <img src="头像.jpg" alt="个人照片">
+    </div>
+    <div class="info-box">
+        <div class="name">姓名：董耀楠</div>
+        <div class="job">职务：</div>
+        <div>
+            <div class="hobbies-title">爱好：特摄、游戏、音乐、电影</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
