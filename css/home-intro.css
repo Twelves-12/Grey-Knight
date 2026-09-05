@@ -1,0 +1,276 @@
+.home-atmosphere {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: clip;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 48%, transparent 15%, #030605c9 78%),
+    repeating-linear-gradient(116deg, #a9ad9205 0, transparent 1px 5px),
+    var(--site-ground);
+}
+
+.home-aureole {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 32% 43% at 50% 43%, #68715530, transparent 100%),
+    radial-gradient(ellipse 35% 12% at 50% 100%, #a7773026, transparent 100%);
+}
+
+.home-light {
+  position: absolute;
+  inset: -40%;
+  transform: rotate(-26deg);
+  background: linear-gradient(
+    90deg,
+    transparent 40%,
+    #e2d7a504 44%,
+    #dfe3bc0c 48%,
+    #dae4c008 50%,
+    transparent 53%
+  );
+  mask-image: radial-gradient(ellipse at 50% 20%, #000, transparent 70%);
+}
+
+.home-impact {
+  position: absolute;
+  left: 50%;
+  top: 84%;
+  width: 900px;
+  height: 400px;
+  translate: -50% -50%;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse 4% 27%, #e9e6bb7a, transparent),
+    radial-gradient(ellipse 35% 22%, #a3954e38, transparent);
+}
+
+.home-embers {
+  position: absolute;
+  inset: 0;
+}
+
+.home-embers i {
+  position: absolute;
+  left: 50%;
+  top: 84%;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  opacity: 0;
+  background: #eed6a0;
+  box-shadow: 0 0 6px #d49d5266;
+}
+
+.home-blade-glint {
+  opacity: 0;
+}
+
+[data-intro] .home-insignia {
+  animation: intro-insignia 1.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+[data-intro] .home-shield {
+  transform-origin: 100px 140px;
+  animation: intro-shield 1.5s 0.6s both;
+}
+
+[data-intro] .home-sword {
+  transform-origin: 100px 130px;
+  animation: intro-sword 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+[data-intro] .home-blade-glint {
+  animation: intro-blade 1.1s 0.25s both;
+}
+
+[data-intro] .home-aureole {
+  animation: intro-light 2.6s 0.45s both;
+}
+
+[data-intro] .home-light {
+  animation: intro-rays 2.8s 0.2s both;
+}
+
+[data-intro] .home-impact {
+  animation: intro-impact 1.6s 0.55s both;
+}
+
+[data-intro] .home-embers i {
+  animation: intro-ember 2s var(--delay) cubic-bezier(0.12, 0.6, 0.35, 1) both;
+}
+
+[data-intro] .home-hero h1 span {
+  animation: intro-title 1.65s 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+[data-intro] .home-hero h1 span + span {
+  animation-delay: 1.02s;
+}
+
+[data-intro] .home-lead {
+  animation: intro-enter 1s 1.75s both;
+}
+
+[data-intro] .home-actions {
+  animation: intro-enter 0.85s 2.3s both;
+}
+
+[data-intro] .home-room .site-nav {
+  animation: intro-enter 0.8s 2.1s both;
+}
+
+[data-intro="pending"] .home-room * {
+  animation-play-state: paused;
+}
+
+[data-intro="pending"] .site-nav,
+[data-intro="pending"] .home-actions {
+  visibility: hidden;
+}
+
+@keyframes intro-insignia {
+  from,
+  28% {
+    transform: translateY(clamp(44px, 10vh, 90px)) scale(2.6);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes intro-sword {
+  from {
+    opacity: 0;
+    transform: translateY(-75px) scale(1.25);
+  }
+  38% {
+    opacity: 1;
+  }
+  58% {
+    transform: translateY(4px) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes intro-shield {
+  from {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes intro-blade {
+  from {
+    opacity: 0;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  35% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  to {
+    opacity: 0;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes intro-light {
+  from {
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes intro-rays {
+  from {
+    opacity: 0;
+    transform: translateX(-10%) rotate(-32deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotate(-26deg);
+  }
+}
+
+@keyframes intro-impact {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  16% {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes intro-ember {
+  from {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  12% {
+    opacity: var(--alpha);
+  }
+  65% {
+    opacity: calc(var(--alpha) * 0.4);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) scale(0.35);
+  }
+}
+
+@keyframes intro-title {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(1.06);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes intro-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-intro] .home-room *,
+  [data-intro] .home-room *::before,
+  [data-intro] .home-room *::after {
+    animation: none;
+  }
+}

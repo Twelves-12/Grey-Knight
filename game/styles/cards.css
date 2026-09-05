@@ -1,0 +1,393 @@
+.card {
+  --face-top: #393c34;
+  --face-bottom: #202822;
+  --ink: #e6d8b9;
+  --line: #9a8b67;
+  --ring-bg: linear-gradient(140deg, #5d604c, #232d27);
+  --accent: #c6a565;
+  --health-ink: #edb1a3;
+  --seal-size: clamp(42px, 8.4vmin, 76px);
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 4px;
+  padding: 7px;
+  background:
+    repeating-linear-gradient(
+      97deg,
+      transparent 0 19px,
+      rgba(93, 62, 24, 0.02) 20px,
+      transparent 21px 34px
+    ),
+    linear-gradient(180deg, var(--face-top), var(--face-bottom) 82%);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  box-shadow:
+    0 7px 14px rgba(0, 0, 0, 0.48),
+    0 0 0 1px rgba(0, 0, 0, 0.72);
+  transition:
+    transform 0.16s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--line) 44%, transparent);
+  pointer-events: none;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 1px;
+  border: 1px solid color-mix(in srgb, var(--line) 16%, transparent);
+  pointer-events: none;
+}
+
+.card.enemy {
+  --face-top: #3e303c;
+  --face-bottom: #211c26;
+  --ink: #dccad2;
+  --line: #967884;
+  --ring-bg: linear-gradient(140deg, #5c4457, #2d2534);
+  --accent: #bd839a;
+  --health-ink: #f0a4ab;
+  background:
+    repeating-linear-gradient(
+      97deg,
+      transparent 0 19px,
+      rgba(201, 182, 246, 0.014) 20px,
+      transparent 21px 34px
+    ),
+    linear-gradient(180deg, var(--face-top), var(--face-bottom) 82%);
+}
+
+.card.player[data-effect="damageHero"] {
+  --accent: #d85842;
+}
+
+.card.player[data-effect="draw"] {
+  --accent: #4d8ead;
+}
+
+.card.player[data-effect="energy"] {
+  --accent: #e3a238;
+}
+
+.card.player[data-effect="healHero"] {
+  --accent: #4fa77a;
+}
+
+.card.player.first-strike {
+  --accent: #b64e72;
+}
+
+.card .c-heading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 1px 2px 5px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+}
+
+.card .c-name {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(11px, 1.5vmin, 15px);
+  text-align: center;
+  color: var(--ink);
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+.card .c-seal {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.card .c-seal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: calc(var(--seal-size) * 0.88);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 5.6deg,
+    transparent 0 22.4deg,
+    color-mix(in srgb, var(--ink) 24%, transparent) 22.8deg 23.7deg
+  );
+}
+
+.card .c-seal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: var(--seal-size);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb, var(--ink) 26%, transparent);
+}
+
+.card .c-seal .ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: calc(var(--seal-size) * 0.72);
+  aspect-ratio: 1;
+  border-radius: 45% 45% 35% 35%;
+  background: var(--ring-bg);
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--ink) 9%, transparent),
+    0 1px 3px rgba(0, 0, 0, 0.26);
+}
+
+.card .c-seal .sigil {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: calc(var(--seal-size) * 0.52);
+  aspect-ratio: 1;
+  color: var(--ink);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.12));
+}
+
+.card .c-seal .sigil svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.card .c-cost .mark,
+.card .stat .mark {
+  display: grid;
+  place-items: center;
+  grid-area: mark;
+}
+
+.card .c-cost .mark svg,
+.card .stat .mark svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.card .c-kicker {
+  display: none;
+  flex-shrink: 0;
+  padding-left: 4px;
+  border-left: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.card.first-strike:not(.hand-card) .c-kicker {
+  display: block;
+}
+
+.card .c-cost {
+  display: grid;
+  flex: 0 0 36px;
+  grid-template-areas: "mark num" "label label";
+  grid-template-columns: 11px 1fr;
+  align-items: center;
+  justify-items: center;
+  height: 46px;
+  margin-top: -4px;
+  padding: 4px 4px 9px;
+  color: #302714;
+  background: linear-gradient(135deg, #b39054, #e6c98e 45%, #987341);
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+  box-shadow: inset 0 0 0 1px rgba(104, 67, 20, 0.36);
+}
+
+.card .c-cost .mark svg {
+  width: 11px;
+  height: 15px;
+}
+
+.card .c-stats {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 -2px -2px;
+  padding-top: 3px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 32%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ink) 5%, transparent),
+    transparent 48% 52%,
+    color-mix(in srgb, var(--health-ink) 9%, transparent)
+  );
+  border-radius: 0 0 5px 5px;
+}
+
+.card .stat {
+  display: grid;
+  grid-template-areas: "mark num" "label num";
+  grid-template-columns: 20px auto;
+  grid-template-rows: 15px 12px;
+  align-items: center;
+  justify-content: center;
+  column-gap: 4px;
+  padding: 3px 2px;
+  color: var(--ink);
+}
+
+.card .stat-label {
+  grid-area: label;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.card .c-cost .num,
+.card .stat .num {
+  grid-area: num;
+  font-family: var(--font-sans);
+  font-size: clamp(24px, 3.5vmin, 30px);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.card .c-cost .num {
+  font-size: 27px;
+}
+
+.card .stat.hp {
+  color: var(--health-ink);
+  border-left: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+}
+
+.card .stat.hp.damaged {
+  color: #fff0e5;
+  background: #9c3440;
+  border-radius: 0 0 3px;
+}
+
+.card .stat.hp.damaged .stat-label {
+  font-weight: 800;
+}
+
+.card:not(.hand-card) {
+  --seal-size: clamp(28px, calc(120cqw - 77px), 76px);
+}
+
+.card:not(.hand-card) .stat {
+  grid-template-columns: clamp(14px, 14cqw, 20px) auto;
+  grid-template-rows: clamp(12px, 12cqw, 17px) clamp(10px, 11cqw, 15px);
+  column-gap: clamp(1px, 2cqw, 4px);
+  padding: 2px 0;
+}
+
+.card:not(.hand-card) .stat .num {
+  font-size: clamp(20px, 23cqw, 30px);
+}
+
+.card:not(.hand-card) .stat-label {
+  font-size: clamp(7px, 6cqw, 8px);
+}
+
+.card-rules {
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+}
+
+.card-rule,
+.card-inscription {
+  margin: 0;
+}
+
+.card-rule {
+  display: grid;
+  gap: 3px;
+}
+
+.rule-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.rule-tag::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+.rule-text {
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.rule-value {
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-inscription {
+  font-family: var(--font-display);
+  line-height: 1.65;
+}
+
+.card:not(.disabled, .selected):hover {
+  z-index: 5;
+  filter: brightness(1.08) saturate(1.04);
+  box-shadow:
+    0 9px 20px rgba(0, 0, 0, 0.56),
+    0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.card.disabled {
+  filter: grayscale(0.75) brightness(0.82);
+  cursor: not-allowed;
+}
+
+.card.selected {
+  z-index: 6;
+  box-shadow:
+    inset 0 0 0 2px var(--candle-bright),
+    0 0 0 3px rgba(245, 179, 76, 0.28),
+    0 0 30px rgba(245, 179, 76, 0.68),
+    0 14px 26px rgba(0, 0, 0, 0.58);
+  filter: brightness(1.09) saturate(1.08);
+}

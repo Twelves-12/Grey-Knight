@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grey Knight · 操作说明</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/rules.css" />
+  </head>
+  <body>
+    <div class="room site-room rules-room" data-room="rules">
+      <site-header active="rules"></site-header>
+      <main class="site-scroll rules-page">
+        <div class="sheet rules-document">
+          <header>
+            <h1 class="site-title">操作说明</h1>
+          </header>
+
+          <section>
+            <h2>出牌</h2>
+            <p>
+              拖动手牌到己方空位，或依次点击手牌和空位。出牌会消耗对应的费用。
+            </p>
+          </section>
+
+          <section>
+            <h2>结束回合</h2>
+            <p>
+              点击「结束回合」或按
+              E，依次结算各列攻击。同列有敌人时攻击单位，否则攻击对方英雄。
+            </p>
+            <p>对方生命归零即获胜，己方生命归零则失败。</p>
+          </section>
+
+          <section>
+            <h2>查看效果</h2>
+            <p>
+              将鼠标移到卡牌上可查看详细效果。敌方空位上的虚影表示即将出场的单位。
+            </p>
+          </section>
+
+          <button
+            id="history-back"
+            class="btn primary rules-back"
+            type="button"
+          >
+            返回上一页
+          </button>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/game/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grey Knight · 游戏</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/game/battle.css" />
+  </head>
+  <body>
+    <div class="room battle-room" data-room="battle">
+      <site-header active="game"></site-header>
+      <main id="stage">
+        <div class="battle-atmosphere"></div>
+        <div class="battlefield">
+          <section id="enemy-hero" class="hero enemy">
+            <div id="enemy-seal" class="seal"></div>
+            <div class="plate-info">
+              <div class="name-row">
+                <span id="enemy-name" class="name"></span>
+                <span id="enemy-hp-text" class="hp-number"></span>
+              </div>
+              <div class="hp-track">
+                <div id="enemy-hp-trail" class="hp-fill trail"></div>
+                <div id="enemy-hp-fill" class="hp-fill"></div>
+              </div>
+              <div id="enemy-sub" class="sub"></div>
+            </div>
+          </section>
+
+          <section id="board" class="board">
+            <div class="battle-sigil">
+              <svg viewBox="0 0 200 200" fill="none" stroke="currentColor">
+                <circle cx="100" cy="100" r="94" />
+                <circle cx="100" cy="100" r="82" stroke-dasharray="2 8" />
+                <path d="M100 14 174 143H26ZM100 186 26 57h148Z" />
+                <path d="m100 49 12 39 39 12-39 12-12 39-12-39-39-12 39-12Z" />
+              </svg>
+            </div>
+            <div class="frontline">
+              <span>交锋</span>
+            </div>
+            <div class="lanes">
+              <div class="lane-cell" data-col="0" data-side="enemy">
+                <div class="slot"></div>
+              </div>
+              <div class="lane-cell" data-col="1" data-side="enemy">
+                <div class="slot"></div>
+              </div>
+              <div class="lane-cell" data-col="2" data-side="enemy">
+                <div class="slot"></div>
+              </div>
+              <div class="lane-cell" data-col="3" data-side="enemy">
+                <div class="slot"></div>
+              </div>
+            </div>
+            <div class="lanes">
+              <div class="lane-cell" data-col="0" data-side="player">
+                <div class="slot"></div>
+              </div>
+              <div class="lane-cell" data-col="1" data-side="player">
+                <div class="slot"></div>
+              </div>
+              <div class="lane-cell" data-col="2" data-side="player">
+                <div class="slot"></div>
+              </div>
+              <div class="lane-cell" data-col="3" data-side="player">
+                <div class="slot"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="player-hero" class="hero player">
+            <div id="player-seal" class="seal"></div>
+            <div class="plate-info">
+              <div class="name-row">
+                <span id="player-name" class="name"></span>
+                <span id="player-hp-text" class="hp-number"></span>
+              </div>
+              <div class="hp-track">
+                <div id="player-hp-trail" class="hp-fill trail"></div>
+                <div id="player-hp-fill" class="hp-fill"></div>
+              </div>
+              <div id="player-sub" class="sub">牌库 0 · 弃 0</div>
+            </div>
+          </section>
+          <section class="hand-zone">
+            <div id="hand" class="hand"></div>
+          </section>
+        </div>
+
+        <aside class="command-panel">
+          <div class="command-toolbar">
+            <div id="round-seal" class="round-seal">
+              <small>回合</small>
+              <span id="round-number" class="num">1</span>
+            </div>
+            <span id="turn-state" class="turn-state">你的回合</span>
+            <nav class="top-icons">
+              <a
+                class="icon-btn"
+                href="./rules.html"
+                data-room-link
+                title="操作说明"
+              >
+                ?
+              </a>
+              <button
+                id="mute-toggle"
+                class="icon-btn mute-toggle"
+                type="button"
+                title="音效开关（M）"
+              >
+                音
+              </button>
+            </nav>
+          </div>
+          <div class="energy-cluster" title="每回合重燃，用于召唤单位">
+            <span class="energy-label">圣力</span>
+            <div class="candles">
+              <div class="candle"></div>
+              <div class="candle"></div>
+              <div class="candle"></div>
+            </div>
+            <div class="energy-value">
+              <b id="energy-number">3</b>
+              <span id="energy-max">/ 3</span>
+            </div>
+          </div>
+          <div class="command-reserve">
+            <div class="oath-emblem">
+              <svg
+                viewBox="0 0 120 150"
+                fill="none"
+                stroke="currentColor"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M60 13 101 29v43c0 32-25 54-41 64-16-10-41-32-41-64V29Z"
+                />
+                <path
+                  d="M60 21 93 34v38c0 27-20 46-33 55-13-9-33-28-33-55V34Z"
+                />
+                <path
+                  d="m60 35 5 44-5 17-5-17ZM43 79h34M60 96v17M52 111h16"
+                  stroke-width="2"
+                />
+                <path
+                  d="M12 48 5 57l9 17-5 13 14 10M108 48l7 9-9 17 5 13-14 10"
+                />
+              </svg>
+            </div>
+            <span>守誓者，长夜将至。</span>
+          </div>
+          <div id="battle-status" class="statusline"></div>
+          <button id="end-turn" class="end-turn" type="button">
+            <span>结束回合</span>
+            <small>结算所有列位 · E</small>
+          </button>
+        </aside>
+      </main>
+      <div id="fx-layer"></div>
+      <div id="overlay-root"></div>
+
+      <template id="card-template">
+        <div class="card">
+          <div class="c-heading">
+            <span class="c-cost">
+              <i class="mark"></i>
+              <b class="num"></b>
+              <span class="stat-label">圣力</span>
+            </span>
+            <span class="c-name"></span>
+            <span class="c-kicker">先手</span>
+          </div>
+          <div class="c-seal">
+            <div class="ring"></div>
+            <span class="sigil"></span>
+          </div>
+          <div class="c-effect"></div>
+          <div class="c-stats">
+            <span class="stat atk">
+              <i class="mark"></i>
+              <b class="num"></b>
+              <span class="stat-label">攻击</span>
+            </span>
+            <span class="stat hp">
+              <i class="mark"></i>
+              <b class="num"></b>
+              <span class="stat-label">生命</span>
+            </span>
+          </div>
+        </div>
+      </template>
+
+      <template id="result-template">
+        <div class="overlay">
+          <div id="battle-result" class="panel">
+            <h2 id="result-title"></h2>
+            <div class="rule-rule"></div>
+            <p class="flavor"></p>
+            <p class="flavor"></p>
+            <div class="stats-grid">
+              <div class="stat-cell">
+                <b id="result-rounds"></b>
+                <span>回合</span>
+              </div>
+              <div class="stat-cell">
+                <b id="result-damage-dealt"></b>
+                <span>灼伤</span>
+              </div>
+              <div class="stat-cell">
+                <b id="result-damage-taken"></b>
+                <span>承受</span>
+              </div>
+              <div class="stat-cell">
+                <b id="result-played"></b>
+                <span>出动</span>
+              </div>
+              <div class="stat-cell">
+                <b id="result-kills"></b>
+                <span>斩灭</span>
+              </div>
+            </div>
+            <div class="panel-actions">
+              <button id="restart-battle" class="btn" type="button"></button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <script type="module" src="/game/main.js"></script>
+  </body>
+</html>

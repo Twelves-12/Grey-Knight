@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grey Knight</title>
+    <script src="/js/home-intro.js"></script>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/home.css" />
+    <link rel="stylesheet" href="/css/home-intro.css" />
+  </head>
+  <body>
+    <div class="site-room home-room">
+      <site-header active="index"></site-header>
+
+      <main class="site-scroll">
+        <section class="home-hero">
+          <div class="home-atmosphere">
+            <div class="home-aureole"></div>
+            <div class="home-light"></div>
+          </div>
+          <div class="home-insignia">
+            <svg class="home-emblem" viewBox="0 0 200 260" fill="none">
+              <defs>
+                <linearGradient
+                  id="shield-metal"
+                  x1="24"
+                  y1="24"
+                  x2="168"
+                  y2="230"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="#41453f" />
+                  <stop offset="0.45" stop-color="#171d1b" />
+                  <stop offset="1" stop-color="#0a0f0e" />
+                </linearGradient>
+                <linearGradient
+                  id="sword-metal"
+                  x1="89"
+                  y1="0"
+                  x2="115"
+                  y2="0"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="#5b615d" />
+                  <stop offset="0.42" stop-color="#c9cec3" />
+                  <stop offset="0.5" stop-color="#fff4d8" />
+                  <stop offset="0.54" stop-color="#929b93" />
+                  <stop offset="1" stop-color="#424a43" />
+                </linearGradient>
+                <linearGradient
+                  id="crest-edge"
+                  x1="100"
+                  y1="30"
+                  x2="100"
+                  y2="242"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="#c4b18a" />
+                  <stop offset="1" stop-color="#4c5148" />
+                </linearGradient>
+              </defs>
+              <g class="home-shield">
+                <path
+                  d="M100 38 171 62V128C171 177 140 216 100 240 60 216 29 177 29 128V62Z"
+                  fill="url(#shield-metal)"
+                  stroke="url(#crest-edge)"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M100 49 161 70V128C161 171 135 205 100 228 65 205 39 171 39 128V70Z"
+                  stroke="#8e917b"
+                  stroke-opacity="0.3"
+                />
+                <path
+                  d="m54 103 20 12m-23 7 23 11m-19 8 19 8m72-46-20 12m23 7-23 11m19 8-19 8"
+                  stroke="#adb099"
+                  stroke-opacity="0.4"
+                />
+                <path
+                  d="M100 54V218M43 77 100 96 157 77"
+                  stroke="#929681"
+                  stroke-opacity="0.1"
+                />
+              </g>
+              <g class="home-sword">
+                <path
+                  d="m100 9 8 10-8 10-8-10Z"
+                  fill="#a69c7d"
+                  stroke="#e0d0a4"
+                />
+                <path d="M96 29H104V71H96Z" fill="#3b3c31" stroke="#8c8b70" />
+                <path
+                  d="m96 35 8 4m-8 4 8 4m-8 4 8 4m-8 4 8 4"
+                  stroke="#b6ae91"
+                  stroke-opacity="0.65"
+                />
+                <path
+                  d="M91 82H109L107 183 100 218 93 183Z"
+                  fill="url(#sword-metal)"
+                />
+                <path
+                  d="M100 89V204"
+                  stroke="#f6e9c9"
+                  stroke-opacity="0.7"
+                  stroke-width="0.7"
+                />
+                <path
+                  d="m66 74 25-4h18l25 4 9 13-8-2-25-5H90l-25 5-8 2Z"
+                  fill="#646a59"
+                  stroke="url(#crest-edge)"
+                  stroke-width="1.5"
+                />
+                <path d="m100 69 9 7-9 10-9-10Z" fill="#c7b184" />
+                <path
+                  class="home-blade-glint"
+                  d="M109 84 107 183 100 218"
+                  pathLength="1"
+                  stroke="#fff4d5"
+                  stroke-width="1.5"
+                />
+              </g>
+            </svg>
+            <div class="home-impact"></div>
+            <div class="home-embers"></div>
+          </div>
+          <h1>
+            <span>Grey</span>
+            <span>Knight</span>
+          </h1>
+          <p class="home-lead">黑暗奇幻卡牌游戏</p>
+          <div class="home-actions">
+            <a id="start-game" class="btn primary" href="./login.html">
+              开始游戏
+            </a>
+            <a class="btn" href="./rules.html">操作说明</a>
+          </div>
+        </section>
+      </main>
+      <button class="home-intro-control" type="button" hidden>重播开场</button>
+    </div>
+    <script type="module" src="/js/site.js"></script>
+  </body>
+</html>

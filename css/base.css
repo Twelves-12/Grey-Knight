@@ -1,0 +1,117 @@
+:root {
+  --void: #05060b;
+  --ink: #0b0d1a;
+
+  --candle: #f5b34c;
+  --candle-bright: #ffd98c;
+  --candle-deep: #c07a2e;
+  --candle-dim: #8a5f2c;
+
+  --paper-hi: #f5ecd6;
+  --paper: #e9dcbf;
+  --ink-warm: #2a1e12;
+
+  --shadow-ink: #cfc3f0;
+
+  --baleful: #c0437a;
+  --baleful-bright: #ff6f9c;
+  --hurt-bright: #ff7a5c;
+  --abyss-bright: #c5a7ff;
+
+  --font-display:
+    "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun",
+    serif;
+  --font-sans:
+    "Noto Sans SC", "Source Han Sans SC", "PingFang SC", system-ui, sans-serif;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+
+  --site-nav-h: 56px;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    radial-gradient(
+      850px 520px at 50% -12%,
+      rgba(102, 69, 171, 0.28),
+      transparent 62%
+    ),
+    radial-gradient(
+      900px 480px at 50% 112%,
+      rgba(227, 139, 43, 0.18),
+      transparent 65%
+    ),
+    linear-gradient(180deg, #070713, #030409 52%, #090807);
+  font-family: var(--font-sans);
+  user-select: none;
+}
+
+.room {
+  min-height: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 20px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #2e2750, #211b3c);
+  border: 1.5px solid rgba(122, 95, 147, 0.8);
+  color: #cbbfe6;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  transition:
+    transform 0.12s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.btn:hover {
+  border-color: var(--candle);
+  color: var(--paper-hi);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn.primary {
+  background: linear-gradient(180deg, #5d3b20, #3f270e);
+  border-color: rgba(193, 138, 69, 0.9);
+  color: var(--paper-hi);
+}
+
+.btn.danger {
+  background: linear-gradient(180deg, #5d2b3a, #3d1c28);
+  border-color: var(--baleful);
+}

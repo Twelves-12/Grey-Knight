@@ -1,0 +1,332 @@
+#fx-layer,
+#overlay-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#overlay-root {
+  z-index: 60;
+}
+
+#fx-layer {
+  z-index: 40;
+}
+
+.round-banner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+  width: min(620px, 86%);
+  padding: 13px 40px 15px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(13, 9, 19, 0.94) 16% 84%,
+    transparent
+  );
+  border-top: 1px solid rgba(245, 179, 76, 0.42);
+  border-bottom: 1px solid rgba(150, 106, 205, 0.35);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 4.2vmin, 38px);
+  color: var(--candle);
+  letter-spacing: 0.2em;
+  text-align: center;
+  animation:
+    banner-in 0.2s ease-out,
+    banner-out 0.35s ease-in 0.85s forwards;
+  pointer-events: none;
+  text-shadow:
+    0 0 18px rgba(245, 179, 76, 0.62),
+    0 3px 10px rgba(0, 0, 0, 0.9);
+}
+
+.round-banner::before,
+.round-banner::after {
+  content: "◆";
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  color: rgba(235, 179, 82, 0.7);
+  font-size: 10px;
+}
+
+.round-banner::before {
+  left: 12%;
+}
+
+.round-banner::after {
+  right: 12%;
+}
+
+@keyframes banner-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+@keyframes banner-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(61, 43, 86, 0.28), transparent 42%),
+    rgba(3, 4, 8, 0.82);
+  backdrop-filter: blur(7px) saturate(0.72);
+  animation: veil-in 0.35s ease-out;
+  pointer-events: auto;
+}
+
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.panel {
+  position: relative;
+  width: min(560px, 92vw);
+  max-height: min(88dvh, 640px);
+  overflow-y: auto;
+  border-radius: 5px 24px 5px 24px;
+  background:
+    radial-gradient(
+      120% 70% at 50% 0%,
+      rgba(116, 90, 160, 0.22),
+      transparent 55%
+    ),
+    repeating-linear-gradient(
+      120deg,
+      transparent 0 28px,
+      rgba(255, 255, 255, 0.012) 29px 30px
+    ),
+    linear-gradient(180deg, #251d3e, #100c1d);
+  border: 1px solid rgba(159, 124, 201, 0.9);
+  padding: 30px 30px 22px;
+  color: #d9cfec;
+  box-shadow:
+    inset 0 0 0 4px rgba(255, 255, 255, 0.018),
+    inset 0 1px rgba(255, 255, 255, 0.08),
+    0 28px 90px rgba(0, 0, 0, 0.72),
+    0 0 40px rgba(106, 74, 154, 0.16);
+  animation: panel-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.panel::before {
+  content: "✦  战斗结算  ✦";
+  display: block;
+  margin-bottom: 8px;
+  text-align: center;
+  color: rgba(200, 170, 231, 0.58);
+  font-family: var(--font-sans);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.36em;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+}
+
+.panel.victory {
+  border-color: rgba(245, 179, 76, 0.8);
+}
+
+.panel.defeat {
+  border-color: rgba(192, 67, 122, 0.85);
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 3.4vmin, 30px);
+  letter-spacing: 0.3em;
+  color: var(--paper-hi);
+}
+
+.panel.victory h2 {
+  color: var(--candle-bright);
+}
+
+.panel.defeat h2 {
+  color: var(--baleful);
+}
+
+.panel .rule-rule {
+  height: 1px;
+  margin: 8px auto 12px;
+  width: 70%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(122, 95, 147, 0.7),
+    transparent
+  );
+}
+
+.panel p {
+  margin: 6px 0;
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.7;
+  color: #d3c8e8;
+}
+
+.panel .flavor {
+  color: rgba(141, 128, 166, 0.85);
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.stat-cell {
+  text-align: center;
+  padding: 7px 2px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.stat-cell b {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--paper-hi);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-cell span {
+  font-size: 10px;
+  color: rgba(141, 128, 166, 0.9);
+}
+
+.tooltip-card {
+  position: fixed;
+  z-index: 70;
+  width: min(280px, 86vw);
+  padding: 14px;
+  border-radius: 5px 16px 5px 16px;
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgba(146, 99, 214, 0.18),
+      transparent 34%
+    ),
+    rgba(20, 15, 34, 0.98);
+  border: 1px solid rgba(158, 121, 209, 0.88);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.06),
+    0 18px 50px rgba(0, 0, 0, 0.68),
+    0 0 24px rgba(100, 66, 156, 0.18);
+  pointer-events: none;
+}
+
+.tooltip-card .tt-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tooltip-card .tt-seal {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 36% 28%,
+      rgba(222, 200, 255, 0.16),
+      transparent 24%
+    ),
+    #2c2148;
+  border: 1.5px solid rgba(133, 99, 214, 0.9);
+  color: var(--shadow-ink);
+  box-shadow:
+    inset 0 0 0 4px rgba(35, 23, 60, 0.72),
+    0 0 14px rgba(126, 83, 194, 0.3);
+}
+
+.tooltip-card .tt-seal svg {
+  display: block;
+  width: 30px;
+  height: 30px;
+}
+
+.tooltip-card .tt-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--paper-hi);
+}
+
+.tooltip-card .tt-en {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: rgba(201, 180, 238, 0.75);
+  margin-top: 1px;
+}
+
+.tooltip-card .tt-meta {
+  font-size: 11px;
+  color: #d8bd86;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.tooltip-card .card-rules {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(201, 180, 238, 0.24);
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(236, 224, 200, 0.92);
+}
+
+.tooltip-card .card-rule {
+  grid-template-columns: 40px 1fr;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.tooltip-card .rule-tag {
+  color: #e0bd7d;
+  font-size: 10px;
+}
+
+.tooltip-card .tt-flavor {
+  margin-top: 10px;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: #b3a397;
+}

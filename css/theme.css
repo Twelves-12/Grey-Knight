@@ -1,0 +1,114 @@
+.site-room,
+site-header {
+  --site-bg: #070a09;
+  --site-ground: #0b100d;
+  --site-text: #c1c4b4;
+  --site-title: #e8e4d3;
+  --site-muted: #a4a698;
+  --site-accent: #d1bc8b;
+  --site-primary-text: #f2e4bd;
+  --site-border: #676b585e;
+  --site-border-strong: #a28a55;
+  --site-radius: 3px;
+  --site-button: #1c211c99;
+  --site-primary: linear-gradient(180deg, #4c4128, #30291b);
+  --site-panel: linear-gradient(145deg, #1c241be6, #0d130ff2);
+  --site-metal: linear-gradient(
+    174deg,
+    #ffffef 8%,
+    #dbded2 34%,
+    #91978c 53%,
+    #e4deca 72%,
+    #b0ad9b 96%
+  );
+}
+
+.site-room {
+  color: var(--site-text);
+  background:
+    radial-gradient(ellipse at 50% 35%, #68715518, transparent 60%),
+    radial-gradient(ellipse at 50% 110%, #a777301a, transparent 40%),
+    var(--site-bg);
+}
+
+:is(.site-room, site-header) .btn {
+  border: 1px solid var(--site-border);
+  border-radius: var(--site-radius);
+  background: var(--site-button);
+  color: var(--site-text);
+}
+
+:is(.site-room, site-header) .btn.primary {
+  border-color: var(--site-border-strong);
+  background: var(--site-primary);
+  color: var(--site-primary-text);
+  box-shadow:
+    inset 0 1px #e4cb8521,
+    0 4px 24px #0004;
+}
+
+:is(.site-room, site-header) .btn.ghost {
+  background: transparent;
+}
+
+:is(.site-room, site-header) .btn:hover {
+  border-color: var(--site-accent);
+  color: #fff3d6;
+}
+
+:is(.site-room, site-header) .btn:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 3px;
+}
+
+.site-title {
+  background: var(--site-metal);
+  background-clip: text;
+  color: transparent;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.sheet {
+  position: relative;
+  border: 1px solid var(--site-border);
+  border-radius: var(--site-radius);
+  background: var(--site-panel);
+  box-shadow:
+    inset 0 1px #e4cb850d,
+    0 18px 50px #0005;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  color: var(--site-muted);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+
+.field input {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid var(--site-border);
+  border-radius: var(--site-radius);
+  background: var(--site-bg);
+  color: var(--site-title);
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  outline: none;
+  transition: border-color 0.15s;
+  user-select: text;
+}
+
+.field input:focus {
+  border-color: var(--site-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.site-room, site-header) .btn {
+    transition: none;
+    transform: none;
+  }
+}
