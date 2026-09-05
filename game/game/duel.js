@@ -1,5 +1,5 @@
 /**
- * 扣除双方生命，按出手顺序返回命中快照和存活者的溢伤。
+ * 扣除双方生命，按出手顺序返回命中快照和存活者的溢伤
  *
  * @param {import("../types.js").Unit} player
  * @param {import("../types.js").Unit} enemy
