@@ -30,11 +30,14 @@ export class CardTooltip {
    */
   update(x, y, battle) {
     const hit = document.elementFromPoint(x, y);
+    if (hit instanceof Element && hit.closest(".tooltip-card")) {
+      return;
+    }
 
     if (
       !(hit instanceof Element) ||
       battle.phase === "over" ||
-      hit.closest(".dragging")
+      hit.closest(".dragging, .dead")
     ) {
       this.hide();
 
@@ -53,7 +56,7 @@ export class CardTooltip {
       );
       const def = unit?.def ?? (side === "enemy" ? preview?.def : undefined);
       if (def) {
-        this.#show(unitCard, x, y, def, unit?.hp ?? def.health, side);
+        this.#show(unitCard, def, unit?.hp ?? def.health, side);
 
         return;
       }
@@ -63,7 +66,7 @@ export class CardTooltip {
     if (handCard) {
       const def = battle.hand[Number(handCard.dataset.index)];
       if (def) {
-        this.#show(handCard, x, y, def, def.health, "player", true);
+        this.#show(handCard, def, def.health, "player", true);
 
         return;
       }
@@ -74,17 +77,13 @@ export class CardTooltip {
 
   /**
    * @param {HTMLElement} anchor
-   * @param {number} x
-   * @param {number} y
    * @param {import("../types.js").CardDef} def
    * @param {number} hp
    * @param {import("../types.js").Side} side
    * @param {boolean} [showCost]
    */
-  #show(anchor, x, y, def, hp, side, showCost = false) {
+  #show(anchor, def, hp, side, showCost = false) {
     if (this.#anchor === anchor) {
-      this.#reposition(x, y);
-
       return;
     }
 
@@ -115,24 +114,33 @@ export class CardTooltip {
     this.#anchor = anchor;
     this.#element = tip;
     this.#root.append(tip);
-    this.#reposition(x, y);
+    this.#reposition();
   }
 
-  /**
-   * @param {number} x
-   * @param {number} y
-   */
-  #reposition(x, y) {
+  #reposition() {
     const tip = this.#element;
     const rect = tip.getBoundingClientRect();
+    const anchor = this.#anchor.getBoundingClientRect();
     const margin = 12;
+    let x = anchor.right + margin;
+    let y = anchor.top;
+    if (x + rect.width > window.innerWidth - margin) {
+      x = anchor.left - rect.width - margin;
+      if (x < margin) {
+        x = anchor.left + (anchor.width - rect.width) / 2;
+        y = anchor.top - rect.height - margin;
+        if (y < margin) {
+          y = anchor.bottom + margin;
+        }
+      }
+    }
     tip.style.left = `${clamp(
-      x + margin,
+      x,
       margin,
       window.innerWidth - rect.width - margin,
     )}px`;
     tip.style.top = `${clamp(
-      y - rect.height * 0.4,
+      y,
       margin,
       window.innerHeight - rect.height - margin,
     )}px`;

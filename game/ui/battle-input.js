@@ -62,14 +62,42 @@ export class BattleInput {
     window.addEventListener("pointermove", this.#onPointerMove);
     window.addEventListener("pointerup", this.#onPointerUp);
     window.addEventListener("pointercancel", this.#onPointerCancel);
+    window.addEventListener("blur", () => this.reset());
+    window.addEventListener("resize", () => this.#tooltip.hide());
+    document.addEventListener(
+      "scroll",
+      (event) => {
+        if (
+          !(event.target instanceof Element) ||
+          !event.target.closest(".tooltip-card")
+        ) {
+          this.#tooltip.hide();
+        }
+      },
+      true,
+    );
     this.#stage.addEventListener("pointerdown", this.#onStagePointerDown);
+    this.#stage.addEventListener("contextmenu", (event) => {
+      if (
+        event.target === this.#stage ||
+        (event.target instanceof Element &&
+          event.target.closest(".card, .lane-cell"))
+      ) {
+        event.preventDefault();
+        this.reset();
+      }
+    });
     document.addEventListener("keydown", this.#onKeyDown);
     document.addEventListener("pointerdown", () => this.#audio.unlock(), {
       once: true,
     });
     const endTurn = $("#end-turn", this.#stage);
     const mute = $("#mute-toggle", this.#stage);
-    endTurn.addEventListener("click", this.#controls.endTurn);
+    endTurn.addEventListener("click", () => {
+      if (!this.#gesture) {
+        this.#controls.endTurn();
+      }
+    });
     mute.addEventListener("click", this.#toggleMute);
   }
 
@@ -101,16 +129,41 @@ export class BattleInput {
 
   /** @param {KeyboardEvent} event */
   #onKeyDown = (event) => {
+    if (
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey ||
+      (event.target instanceof Element &&
+        event.target.closest(
+          "input, textarea, select, [contenteditable]:not([contenteditable='false'])",
+        ))
+    ) {
+      return;
+    }
     const key = event.key.toLowerCase();
+    // 长按不算第二次操作，也别抢浏览器和输入框的快捷键。
+    if (event.repeat) {
+      if ([" ", "e", "enter", "m"].includes(key)) {
+        event.preventDefault();
+      }
+
+      return;
+    }
     if (key === "m") {
       this.#toggleMute();
-    } else if (key === "r") {
-      this.#controls.restart();
     } else if (key === "escape") {
-      this.#clearSelection();
-    } else if ((key === "e" || key === " ") && this.#controls.canAct()) {
       event.preventDefault();
-      this.#controls.endTurn();
+      this.reset();
+    } else if (
+      (key === "e" || key === " ") &&
+      (!(event.target instanceof Element) || !event.target.closest("button, a"))
+    ) {
+      event.preventDefault();
+      if (!this.#gesture && this.#controls.canAct()) {
+        this.#controls.endTurn();
+      }
     }
   };
 
@@ -125,6 +178,7 @@ export class BattleInput {
       return;
     }
     this.#audio.unlock();
+    this.#tooltip.hide();
     if (card.classList.contains("disabled")) {
       this.#audio.play("deny");
       this.#deny($(".c-cost", card), $(".energy-cluster", this.#stage));
@@ -153,8 +207,11 @@ export class BattleInput {
       }
       this.#tooltip.hide();
       if (!gesture.drag) {
+        const dx = event.clientX - gesture.x;
+        const dy = event.clientY - gesture.y;
         if (
-          Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) < 8
+          Math.hypot(dx, dy) < 8 ||
+          (event.pointerType === "touch" && Math.abs(dx) > Math.abs(dy))
         ) {
           return;
         }
@@ -182,12 +239,17 @@ export class BattleInput {
 
     if (this.#selected !== undefined) {
       this.#updateDropTarget(event.clientX, event.clientY);
+      this.#tooltip.hide();
+
+      return;
     }
-    this.#tooltip.update(
-      event.clientX,
-      event.clientY,
-      this.#controls.getBattle(),
-    );
+    if (this.#controls.canAct() && event.pointerType !== "touch") {
+      this.#tooltip.update(
+        event.clientX,
+        event.clientY,
+        this.#controls.getBattle(),
+      );
+    }
   };
 
   /** @param {PointerEvent} event */
@@ -198,6 +260,12 @@ export class BattleInput {
     }
     this.#gesture = undefined;
     if (!gesture.drag) {
+      // 横划是在翻手牌，不要在松手时顺便选中一张。
+      if (
+        Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) >= 8
+      ) {
+        return;
+      }
       this.#toggleSelect(gesture.index);
 
       return;
@@ -224,26 +292,38 @@ export class BattleInput {
     gesture.drag?.remove();
     this.#gesture = undefined;
     this.#clearSelection();
-    this.#audio.play("deny");
   };
 
   /** @param {PointerEvent} event */
   #onStagePointerDown = (event) => {
-    if (!this.#controls.canAct() || this.#gesture) {
+    if (event.button === 2) {
+      this.reset();
+
+      return;
+    }
+    if (event.button !== 0 || !this.#controls.canAct() || this.#gesture) {
       return;
     }
     this.#audio.unlock();
     const cell = cellAt(event.clientX, event.clientY);
-    if (
-      this.#selected !== undefined &&
-      cell?.dataset.side === "player" &&
-      !this.#play(this.#selected, cell)
-    ) {
-      this.#audio.play("deny");
+    if (this.#selected !== undefined) {
+      if (
+        cell?.dataset.side === "player" &&
+        !this.#play(this.#selected, cell)
+      ) {
+        this.#audio.play("deny");
+
+        return;
+      }
+      this.#clearSelection();
 
       return;
     }
-    this.#clearSelection();
+    this.#tooltip.update(
+      event.clientX,
+      event.clientY,
+      this.#controls.getBattle(),
+    );
   };
 
   /** @param {number} index */
