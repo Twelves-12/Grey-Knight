@@ -16,19 +16,14 @@ const heroElements = (side, stage) => ({
 });
 
 export class BattleHud {
-  #player;
   #stage;
   #heroes;
   #candles;
   #maxHp = { enemy: 0, player: 0 };
   #lastHp = { enemy: 0, player: 0 };
 
-  /**
-   * @param {HTMLElement} room
-   * @param {import("../types.js").PlayerSetup} player
-   */
-  constructor(room, player) {
-    this.#player = player;
+  /** @param {HTMLElement} room */
+  constructor(room) {
     this.#stage = $("#stage", room);
     this.#heroes = {
       enemy: heroElements("enemy", this.#stage),
@@ -95,15 +90,15 @@ export class BattleHud {
     enemy.seal.textContent = encounter.hero.glyph;
     $("#enemy-name", this.#stage).textContent =
       `${encounter.hero.name} ${encounter.hero.nameEn}`;
-    player.seal.textContent = this.#player.hero.glyph;
+    player.seal.textContent = battle.player.hero.glyph;
     $("#player-name", this.#stage).textContent =
-      `${this.#player.hero.name} ${this.#player.hero.nameEn}`;
+      `${battle.player.hero.name} ${battle.player.hero.nameEn}`;
     this.#maxHp = {
       enemy: encounter.maxHealth,
-      player: this.#player.maxHealth,
+      player: battle.player.maxHealth,
     };
-    this.#lastHp = { enemy: battle.enemyHealth, player: battle.playerHealth };
-    this.setHeroHp("player", battle.playerHealth);
+    this.#lastHp = { enemy: battle.enemyHealth, player: battle.player.health };
+    this.setHeroHp("player", battle.player.health);
     this.setHeroHp("enemy", battle.enemyHealth);
   }
 

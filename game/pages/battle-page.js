@@ -1,22 +1,17 @@
 // TODO: 整个文件都需要重构。目前只是一个纯战斗demo，之后要跟随不同关卡和剧情变更
-import { Battle } from "../game/battle.js";
 import { BattleView } from "../ui/battle-view.js";
 
 /**
- * @typedef {import("../types.js").EncounterFactory} EncounterFactory
- * @typedef {import("../types.js").PlayerSetup} PlayerSetup
  * @typedef {{
  *   audio: import("../audio/audio.js").GameAudio;
- *   createEncounter: EncounterFactory;
- *   player: PlayerSetup;
+ *   createBattle: (seed: number) => import("../game/battle.js").Battle;
  *   seed?: number;
  * }} BattlePageOptions
  */
 
 export class BattlePage {
   #nextSeed;
-  #createEncounter;
-  #player;
+  #createBattle;
   #ac = new AbortController();
   #battle;
   // 模型进入玩家回合时，动画可能还没播完，这个锁得单独留着。
@@ -28,13 +23,11 @@ export class BattlePage {
    * @param {BattlePageOptions} options
    */
   constructor(room, options) {
-    this.#createEncounter = options.createEncounter;
-    this.#player = options.player;
+    this.#createBattle = options.createBattle;
     this.#nextSeed =
       options.seed ?? crypto.getRandomValues(new Uint32Array(1))[0];
-    this.#battle = this.#createBattle();
+    this.#battle = this.#nextBattle();
     this.#view = new BattleView(room, {
-      player: this.#player,
       audio: options.audio,
       controls: {
         getBattle: () => this.#battle,
@@ -119,15 +112,15 @@ export class BattlePage {
     this.#ac.abort();
     this.#ac = new AbortController();
     this.#busy = true;
-    this.#battle = this.#createBattle();
+    this.#battle = this.#nextBattle();
     this.#view.startBattle(this.#battle);
     this.#runResolution();
   };
 
-  #createBattle() {
+  #nextBattle() {
     const seed = this.#nextSeed;
     this.#nextSeed = (seed + 0x9e_37_79_b9) >>> 0;
 
-    return new Battle(seed, this.#player, this.#createEncounter);
+    return this.#createBattle(seed);
   }
 }

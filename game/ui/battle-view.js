@@ -38,12 +38,11 @@ export class BattleView {
   /**
    * @param {HTMLElement} room
    * @param {{
-   *   player: import("../types.js").PlayerSetup;
    *   audio: import("../audio/audio.js").GameAudio;
    *   controls: import("./battle-input.js").BattleControls;
    * }} options
    */
-  constructor(room, { player, audio, controls }) {
+  constructor(room, { audio, controls }) {
     const stage = $("#stage", room);
     const hand = $("#hand", stage);
     const cardTemplate = $("#card-template", room);
@@ -52,7 +51,7 @@ export class BattleView {
     this.#fxLayer = $("#fx-layer", room);
     this.#overlayRoot = $("#overlay-root", room);
     this.#resultTemplate = $("#result-template", room);
-    this.#hud = new BattleHud(room, player);
+    this.#hud = new BattleHud(room);
     this.#board = new BattleBoard($("#board", stage), cardTemplate);
     this.#hand = new BattleHand(hand, cardTemplate);
     this.#tooltip = new CardTooltip(this.#overlayRoot);

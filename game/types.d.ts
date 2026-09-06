@@ -28,9 +28,8 @@ export interface HeroIdentity {
   nameEn: string;
 }
 
-export interface PlayerSetup {
+export interface PlayerDef {
   deck: readonly CardDef[];
-  health: number;
   hero: HeroIdentity;
   maxHealth: number;
 }
@@ -49,14 +48,11 @@ export interface Encounter {
   plan: (battle: EncounterContext) => EncounterAction[];
 }
 
-export type EncounterFactory = (seed: number) => Encounter;
-
 export type EncounterContext = Pick<
   import("./game/battle.js").Battle,
   | "round"
   | "playerBoard"
   | "enemyBoard"
-  | "playerHealth"
   | "enemyHealth"
   | "summonEnemy"
   | "damageHero"

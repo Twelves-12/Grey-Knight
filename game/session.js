@@ -4,7 +4,8 @@ export function requireSession() {
   if (kv.get("session") !== null) {
     return true;
   }
-  location.replace("./login.html");
+  const next = encodeURIComponent(location.pathname + location.search);
+  location.replace(`./login.html?next=${next}`);
 
   return false;
 }

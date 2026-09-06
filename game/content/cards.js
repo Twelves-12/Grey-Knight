@@ -2,6 +2,33 @@ import { CARD_ICONS } from "./card-icons.js";
 
 /** @typedef {import("../types.js").CardDef} CardDef */
 
+/** @type {CardDef} */
+export const HERALD = {
+  attack: 1,
+  cost: 1,
+  health: 2,
+  icon: CARD_ICONS.herald,
+  id: "herald",
+  nameEn: "Herald",
+  name: "号令者",
+  onDeploy: [{ count: 1, kind: "draw" }],
+  text: "入场：抽 1 张牌。",
+  flavor: "号角之前，先有信使。",
+};
+
+/** @type {CardDef} */
+export const SHIELDBEARER = {
+  attack: 1,
+  cost: 2,
+  health: 4,
+  icon: CARD_ICONS.shieldbearer,
+  id: "shieldbearer",
+  nameEn: "Shieldbearer",
+  name: "盾卫",
+  text: "举盾者即是城墙。",
+  flavor: "他的盾，比城墙更硬。",
+};
+
 /** @type {readonly CardDef[]} */
 export const GREY_KNIGHT_STARTER_DECK = [
   {
@@ -27,18 +54,7 @@ export const GREY_KNIGHT_STARTER_DECK = [
     text: "入场：获得 1 点圣力。",
     flavor: "灰烬里的余火，也能点燃圣焰。",
   },
-  {
-    attack: 1,
-    cost: 1,
-    health: 2,
-    icon: CARD_ICONS.herald,
-    id: "herald",
-    nameEn: "Herald",
-    name: "号令者",
-    onDeploy: [{ count: 1, kind: "draw" }],
-    text: "入场：抽 1 张牌。",
-    flavor: "号角之前，先有信使。",
-  },
+  HERALD,
   {
     attack: 3,
     cost: 2,
@@ -74,17 +90,7 @@ export const GREY_KNIGHT_STARTER_DECK = [
     text: "制式长剑，可靠的杀法。",
     flavor: "队列里最安静的一把剑。",
   },
-  {
-    attack: 1,
-    cost: 2,
-    health: 4,
-    icon: CARD_ICONS.shieldbearer,
-    id: "shieldbearer",
-    nameEn: "Shieldbearer",
-    name: "盾卫",
-    text: "举盾者即是城墙。",
-    flavor: "他的盾，比城墙更硬。",
-  },
+  SHIELDBEARER,
   {
     attack: 2,
     cost: 3,

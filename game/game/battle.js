@@ -2,7 +2,7 @@
  * @typedef {import("../types.js").BattleEvent} BattleEvent
  * @typedef {import("../types.js").CardDef} CardDef
  * @typedef {import("../types.js").PlayResult} PlayResult
- * @typedef {import("../types.js").PlayerSetup} PlayerSetup
+ * @typedef {import("./player.js").Player} Player
  * @typedef {import("../types.js").Side} Side
  * @typedef {import("../types.js").Unit} Unit
  * @typedef {import("../types.js").Winner} Winner
@@ -20,9 +20,8 @@ import {
 
 export class Battle {
   #encounter;
-  #enemyMaxHealth;
   #piles;
-  #playerMaxHealth;
+  #player;
   /** @type {(Unit | undefined)[]} */
   #enemyBoard = Array.from({
     length: LANE_COUNT,
@@ -44,7 +43,6 @@ export class Battle {
   #heroDamageTaken = 0;
   #nextUid = 1;
   #phase = "intro";
-  #playerHealth;
   /** @type {BattleEvent[]} */
   #queue = [];
   #round = 1;
@@ -52,18 +50,16 @@ export class Battle {
   #winner;
   /**
    * @param {number} seed
-   * @param {PlayerSetup} player
-   * @param {import("../types.js").EncounterFactory} createEncounter
+   * @param {Player} player
+   * @param {import("../types.js").Encounter} encounter
    */
-  constructor(seed, player, createEncounter) {
-    this.#encounter = createEncounter(seed);
-    this.#enemyMaxHealth = this.#encounter.maxHealth;
-    this.#playerMaxHealth = player.maxHealth;
+  constructor(seed, player, encounter) {
+    this.#encounter = encounter;
+    this.#player = player;
     const random = new Random(seed);
     this.#piles = new CardPiles(player.deck, random.fork());
-    this.#enemyHealth = this.#enemyMaxHealth;
+    this.#enemyHealth = encounter.maxHealth;
     this.#energy = START_ENERGY;
-    this.#playerHealth = player.health;
     this.#encounter.opening(this);
     if (this.#finishIfOver()) {
       return;
@@ -109,8 +105,8 @@ export class Battle {
     return this.#playerBoard;
   }
 
-  get playerHealth() {
-    return this.#playerHealth;
+  get player() {
+    return this.#player;
   }
 
   get round() {
@@ -267,16 +263,15 @@ export class Battle {
         }
         case "healHero": {
           const health =
-            side === "player" ? this.#playerHealth : this.#enemyHealth;
-          const maxHealth =
-            side === "player" ? this.#playerMaxHealth : this.#enemyMaxHealth;
-          const amount = Math.min(effect.count, maxHealth - health);
+            side === "player" ? this.#player.health : this.#enemyHealth;
+          let amount;
+          if (side === "player") {
+            amount = this.#player.heal(effect.count);
+          } else {
+            amount = Math.min(effect.count, this.#encounter.maxHealth - health);
+            this.#enemyHealth += amount;
+          }
           if (amount > 0) {
-            if (side === "player") {
-              this.#playerHealth += amount;
-            } else {
-              this.#enemyHealth += amount;
-            }
             this.#queue.push({
               amount,
               kind: "heal",
@@ -298,8 +293,7 @@ export class Battle {
    */
   damageHero(target, amount, origin) {
     if (target === "player") {
-      amount = Math.min(amount, this.#playerHealth);
-      this.#playerHealth -= amount;
+      amount = this.#player.takeDamage(amount);
       this.#heroDamageTaken += amount;
     } else {
       amount = Math.min(amount, this.#enemyHealth);
@@ -314,7 +308,7 @@ export class Battle {
       kind: "heroHit",
       origin,
       target,
-      targetHp: target === "player" ? this.#playerHealth : this.#enemyHealth,
+      targetHp: target === "player" ? this.#player.health : this.#enemyHealth,
     });
   }
 
@@ -406,7 +400,7 @@ export class Battle {
   }
 
   #finishIfOver() {
-    const playerDown = this.#playerHealth === 0;
+    const playerDown = this.#player.health === 0;
     const enemyDown = this.#enemyHealth === 0;
     if (!playerDown && !enemyDown) {
       return false;

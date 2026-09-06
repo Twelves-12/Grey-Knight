@@ -1,6 +1,17 @@
 import * as kv from "../game/kv.js";
 
 const form = document.forms[0];
+const requestedNext = new URLSearchParams(location.search).get("next");
+const next =
+  requestedNext === "/game.html" || requestedNext?.startsWith("/game.html?")
+    ? requestedNext
+    : null;
+if (next) {
+  const alternate = document.querySelector(".auth-foot a");
+  const url = new URL(alternate.href);
+  url.searchParams.set("next", next);
+  alternate.href = url.href;
+}
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -29,5 +40,5 @@ form.addEventListener("submit", (event) => {
   }
 
   kv.set("session", username);
-  location.assign("./index.html");
+  location.assign(next ?? "./index.html");
 });

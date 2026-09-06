@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grey Knight · 卡牌图鉴</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/cards.css" />
+  </head>
+  <body>
+    <div class="room site-room">
+      <site-header active="cards"></site-header>
+      <main class="site-scroll codex-page">
+        <header class="codex-heading">
+          <div>
+            <p class="eyebrow">THE FIELD CODEX</p>
+            <h1 class="site-title">战线图鉴</h1>
+            <p>记住同行者，也记住黑暗里的面孔。</p>
+          </div>
+          <a class="btn" href="./story.html">踏上旅途 →</a>
+        </header>
+        <form
+          id="card-filters"
+          class="codex-filters"
+          role="search"
+          aria-label="筛选卡牌"
+        >
+          <label class="field">
+            搜索
+            <input
+              type="search"
+              name="search"
+              placeholder="名称、规则或铭文"
+              autocomplete="off"
+            />
+          </label>
+          <label class="field">
+            阵营
+            <select name="side">
+              <option value="all">全部阵营</option>
+              <option value="player">灰骑士</option>
+              <option value="enemy">深渊</option>
+            </select>
+          </label>
+          <label class="field">
+            费用
+            <select name="cost">
+              <option value="all">全部费用</option>
+              <option value="0">0 圣力</option>
+              <option value="1">1 圣力</option>
+              <option value="2">2 圣力</option>
+              <option value="3">3 圣力</option>
+            </select>
+          </label>
+          <label class="field">
+            效果
+            <select name="effect">
+              <option value="all">全部效果</option>
+              <option value="firstStrike">先手</option>
+              <option value="deploy">入场 / 降临</option>
+              <option value="draw">抽牌</option>
+              <option value="energy">圣力</option>
+              <option value="damageHero">伤害英雄</option>
+              <option value="healHero">治疗英雄</option>
+            </select>
+          </label>
+          <button id="clear-filters" class="btn" type="button">重置筛选</button>
+        </form>
+        <div class="codex-meta">
+          <span id="card-count" role="status"></span>
+          <span>点开卡牌，查看详细规则与铭文。</span>
+        </div>
+        <div id="card-grid" class="codex-grid"></div>
+        <p id="card-empty" class="codex-empty sheet" hidden>
+          没有符合条件的卡牌。试试减少筛选条件。
+        </p>
+        <p class="codex-footnote">
+          深渊单位由敌方意图召唤，0 费用不代表玩家可以使用。
+        </p>
+        <noscript><p>图鉴需要 JavaScript 才能读取卡牌数据。</p></noscript>
+      </main>
+    </div>
+    <script type="module" src="/js/cards.js"></script>
+  </body>
+</html>
