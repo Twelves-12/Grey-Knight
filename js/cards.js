@@ -6,8 +6,6 @@ import { applyCardSigil } from "../game/ui/card-icons.js";
 import { createCardRules } from "../game/ui/card-rules.js";
 import { el } from "../game/ui/utils.js";
 
-import "./site.js";
-
 const form = document.querySelector("#card-filters");
 const grid = document.querySelector("#card-grid");
 const entries = [

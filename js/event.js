@@ -4,8 +4,6 @@ import { Player } from "../game/game/player.js";
 import { applyCardSigil } from "../game/ui/card-icons.js";
 import { el } from "../game/ui/utils.js";
 
-import "./site.js";
-
 const form = document.querySelector("#event-form");
 const choices = document.querySelector("#event-choices");
 const outcome = document.querySelector("#event-outcome");

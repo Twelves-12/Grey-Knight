@@ -1,5 +1,3 @@
-import "./site.js";
-
 const passages = [...document.querySelectorAll(".story-passage")];
 const back = document.querySelector("#story-back");
 const next = document.querySelector("#story-next");

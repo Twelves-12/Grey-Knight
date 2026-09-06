@@ -1,9 +1,10 @@
 import * as kv from "../game/kv.js";
+import { GAME_PAGES } from "../game/session.js";
 
 const form = document.forms[0];
 const requestedNext = new URLSearchParams(location.search).get("next");
 const next =
-  requestedNext === "/game.html" || requestedNext?.startsWith("/game.html?")
+  requestedNext && Object.hasOwn(GAME_PAGES, requestedNext.split(/[?#]/, 1)[0])
     ? requestedNext
     : null;
 if (next) {
@@ -40,5 +41,5 @@ form.addEventListener("submit", (event) => {
   }
 
   kv.set("session", username);
-  location.assign(next ?? "./index.html");
+  location.replace(next ?? "./index.html");
 });
