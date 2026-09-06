@@ -10,17 +10,17 @@
 
 共有9个页面：
 
-| 页面              | 作用                           |
-| ---------------   | ------------------------------ |
-| `index.html`      | 首页与游戏入口                 |
-| `login.html`      | 登录                           |
-| `register.html`   | 注册                           |
-| `story.html`      | 序章剧情，可前后阅读或跳过     |
-| `event.html`      | 断桥抉择，显示开局代价与收益   |
-| `game.html`       | 卡牌战斗                       |
-| `cards.html`      | 卡牌图鉴，搜索、筛选与规则查阅 |
-| `rules.html`      | 操作说明                       |
-| `team/index.html` | 团队介绍                       |
+| 页面               | 作用                           |
+| ------------------ | ------------------------------ |
+| `index.html`       | 首页与游戏入口                 |
+| `login.html`       | 登录                           |
+| `register.html`    | 注册                           |
+| `game/story.html`  | 序章剧情，可前后阅读或跳过     |
+| `game/event.html`  | 断桥抉择，显示开局代价与收益   |
+| `game/battle.html` | 卡牌战斗                       |
+| `game/cards.html`  | 卡牌图鉴，搜索、筛选与规则查阅 |
+| `game/rules.html`  | 操作说明                       |
+| `team/index.html`  | 团队介绍                       |
 
 ## 项目类型
 

@@ -3,9 +3,9 @@ import { $ } from "../dom.js";
 
 const pages = [
   { id: "index", href: "/index.html", label: "首页" },
-  { id: "game", href: "/story.html", label: "游戏" },
-  { id: "cards", href: "/cards.html", label: "图鉴" },
-  { id: "rules", href: "/rules.html", label: "操作说明" },
+  { id: "game", href: "/game/story.html", label: "游戏" },
+  { id: "cards", href: "/game/cards.html", label: "图鉴" },
+  { id: "rules", href: "/game/rules.html", label: "操作说明" },
   { id: "team", href: "/team/", label: "团队介绍" },
 ];
 

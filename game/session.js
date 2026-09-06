@@ -1,11 +1,11 @@
 import * as kv from "./kv.js";
 
 export const GAME_PAGES = {
-  "/story.html": "../js/story.js",
-  "/event.html": "../js/event.js",
-  "/game.html": "./main.js",
-  "/cards.html": "../js/cards.js",
-  "/rules.html": null,
+  "/game/story.html": "../js/story.js",
+  "/game/event.html": "../js/event.js",
+  "/game/battle.html": "./main.js",
+  "/game/cards.html": "../js/cards.js",
+  "/game/rules.html": null,
 };
 
 export function requireSession() {
