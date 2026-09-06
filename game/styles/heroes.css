@@ -241,11 +241,6 @@
   text-align: left;
 }
 
-.hero .sub.warn {
-  color: var(--baleful-bright);
-  animation: blink-soft 0.8s ease-in-out infinite alternate;
-}
-
 @keyframes blink-soft {
   to {
     opacity: 0.35;

@@ -6,7 +6,7 @@ import { createCard } from "./card-view.js";
  * @typedef {{
  *   getBattle: () => import("../game/battle.js").Battle;
  *   canAct: () => boolean;
- *   play: (index: number, col: number, drag?: DraggedCard) => boolean;
+ *   play: (index: number, col: number, drag?: DraggedCard) => import("../types.js").PlayResult;
  *   endTurn: () => void;
  *   restart: () => void;
  * }} BattleControls
@@ -29,7 +29,6 @@ export class BattleInput {
   #cardTemplate;
   #fxLayer;
   #hand;
-  #notify;
   #audio;
   #stage;
   #tooltip;
@@ -40,7 +39,6 @@ export class BattleInput {
    *   cardTemplate: HTMLTemplateElement;
    *   fxLayer: HTMLElement;
    *   hand: HTMLElement;
-   *   notify: (text: string, seconds?: number) => void;
    *   audio: import("../audio/audio.js").GameAudio;
    *   stage: HTMLElement;
    *   tooltip: import("./card-tooltip.js").CardTooltip;
@@ -53,7 +51,6 @@ export class BattleInput {
     this.#cardTemplate = elements.cardTemplate;
     this.#fxLayer = elements.fxLayer;
     this.#hand = elements.hand;
-    this.#notify = elements.notify;
     this.#audio = elements.audio;
     this.#stage = elements.stage;
     this.#tooltip = elements.tooltip;
@@ -83,6 +80,14 @@ export class BattleInput {
     }
     this.#clearSelection();
     this.#tooltip.hide();
+    for (const element of $$(
+      ".c-cost, .energy-cluster, .lane-cell",
+      this.#stage,
+    )) {
+      for (const animation of element.getAnimations()) {
+        animation.cancel();
+      }
+    }
   }
 
   #clearSelection() {
@@ -122,7 +127,7 @@ export class BattleInput {
     this.#audio.unlock();
     if (card.classList.contains("disabled")) {
       this.#audio.play("deny");
-      this.#notify("圣力不足，无法部署", 1.8);
+      this.#deny($(".c-cost", card), $(".energy-cluster", this.#stage));
 
       return;
     }
@@ -166,6 +171,7 @@ export class BattleInput {
           this.#fxLayer,
         );
         this.#clearSelection();
+        this.#showPlayableCells();
         this.#audio.play("select");
       }
       gesture.drag.move(event.clientX, event.clientY);
@@ -199,13 +205,10 @@ export class BattleInput {
 
     const cell = cellAt(event.clientX, event.clientY);
     this.#clearDropTarget();
+    this.#clearPlayableCells();
     const played =
       cell?.dataset.side === "player" &&
-      this.#controls.play(
-        gesture.index,
-        Number(cell.dataset.col),
-        gesture.drag,
-      );
+      this.#play(gesture.index, cell, gesture.drag);
     if (!played) {
       gesture.drag.returnToHand();
       this.#audio.play("deny");
@@ -220,7 +223,7 @@ export class BattleInput {
     }
     gesture.drag?.remove();
     this.#gesture = undefined;
-    this.#clearDropTarget();
+    this.#clearSelection();
     this.#audio.play("deny");
   };
 
@@ -234,16 +237,17 @@ export class BattleInput {
     if (
       this.#selected !== undefined &&
       cell?.dataset.side === "player" &&
-      !this.#controls.play(this.#selected, Number(cell.dataset.col))
+      !this.#play(this.#selected, cell)
     ) {
       this.#audio.play("deny");
+
+      return;
     }
     this.#clearSelection();
   };
 
   /** @param {number} index */
   #toggleSelect(index) {
-    const battle = this.#controls.getBattle();
     this.#selected = this.#selected === index ? undefined : index;
     for (const card of $$(".card", this.#hand)) {
       card.classList.toggle(
@@ -255,11 +259,76 @@ export class BattleInput {
     this.#clearPlayableCells();
     this.#audio.play("select");
     if (this.#selected !== undefined) {
-      for (const cell of $$('.lane-cell[data-side="player"]', this.#stage)) {
-        const col = Number(cell.dataset.col);
-        cell.classList.toggle("playable", !battle.playerBoard[col]);
+      this.#showPlayableCells();
+    }
+  }
+
+  /**
+   * @param {number} index
+   * @param {HTMLElement} cell
+   * @param {DraggedCard} [drag]
+   */
+  #play(index, cell, drag) {
+    const result = this.#controls.play(index, Number(cell.dataset.col), drag);
+    if (result.ok === false) {
+      if (result.reason === "afford") {
+        this.#deny(
+          $(".c-cost", this.#hand.children[index]),
+          $(".energy-cluster", this.#stage),
+        );
+      } else if (result.reason === "occupied") {
+        this.#deny(cell);
       }
-      this.#notify("点击发光空列部署，或直接按住拖出", 2.6);
+    }
+
+    return result.ok;
+  }
+
+  /**
+   * 让不能点击的卡牌位闪一下
+   *
+   * @param {...HTMLElement} elements
+   */
+  #deny(...elements) {
+    const distance = window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches
+      ? 0
+      : 3;
+    for (const element of elements) {
+      for (const animation of element.getAnimations()) {
+        animation.cancel();
+      }
+      element.animate(
+        [
+          {
+            outline: "2px solid #f28d7d",
+            outlineOffset: "2px",
+            translate: `${-distance}px 0`,
+          },
+          {
+            outline: "2px solid #f28d7d",
+            outlineOffset: "2px",
+            translate: `${distance}px 0`,
+            offset: 0.3,
+          },
+          {
+            outline: "2px solid transparent",
+            outlineOffset: "2px",
+            translate: "0px 0",
+          },
+        ],
+        { duration: 320, easing: "ease-out" },
+      );
+    }
+  }
+
+  #showPlayableCells() {
+    const battle = this.#controls.getBattle();
+    for (const cell of $$('.lane-cell[data-side="player"]', this.#stage)) {
+      cell.classList.toggle(
+        "playable",
+        !battle.playerBoard[Number(cell.dataset.col)],
+      );
     }
   }
 
@@ -270,17 +339,19 @@ export class BattleInput {
   #updateDropTarget(x, y) {
     const cell = cellAt(x, y);
     this.#clearDropTarget();
-    if (
-      cell?.dataset.side === "player" &&
-      !this.#controls.getBattle().playerBoard[Number(cell.dataset.col)]
-    ) {
-      cell.classList.add("target");
+    if (cell?.dataset.side === "player") {
+      const occupied =
+        this.#controls.getBattle().playerBoard[Number(cell.dataset.col)];
+      cell.classList.add(occupied ? "invalid-target" : "target");
     }
   }
 
   #clearDropTarget() {
-    for (const cell of $$(".lane-cell.target", this.#stage)) {
-      cell.classList.remove("target");
+    for (const cell of $$(
+      ".lane-cell.target, .lane-cell.invalid-target",
+      this.#stage,
+    )) {
+      cell.classList.remove("target", "invalid-target");
     }
   }
 

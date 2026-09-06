@@ -21,9 +21,6 @@ export class BattlePage {
   #battle;
   // 模型进入玩家回合时，动画可能还没播完，这个锁得单独留着。
   #busy = true;
-  /** @type {Set<string>} */
-  #seenAbilities = new Set();
-  #sawIntentTip = false;
   #view;
 
   /**
@@ -59,8 +56,6 @@ export class BattlePage {
 
   async #runResolution() {
     const signal = this.#ac.signal;
-    const opening = this.#battle.phase === "intro";
-    const announceTurn = this.#battle.phase !== "player";
     this.#view.lock(this.#battle);
     while (!signal.aborted) {
       const event = this.#battle.advance();
@@ -75,33 +70,6 @@ export class BattlePage {
 
     this.#busy = false;
     this.#view.ready(this.#battle);
-    if (this.#battle.phase !== "player" || !announceTurn) {
-      return;
-    }
-    if (opening) {
-      this.#view.say("点击手牌选中，或按住拖到空列部署", 6);
-
-      return;
-    }
-
-    const intents = this.#battle.enemyIntents;
-    const ability = intents.find(
-      (intent) =>
-        intent.kind === "ability" && !this.#seenAbilities.has(intent.name),
-    );
-    const summon = intents.find((intent) => intent.kind === "summon");
-    if (ability) {
-      this.#seenAbilities.add(ability.name);
-      this.#view.say(ability.text, 5);
-    } else if (summon && !this.#sawIntentTip) {
-      this.#sawIntentTip = true;
-      this.#view.say(
-        `敌方意图：回合结束时第 ${summon.col + 1} 列将降临「${summon.def.name}」——提前同列布防可挡下它`,
-        5,
-      );
-    } else {
-      this.#view.say("你的回合——继续部署，或结束回合", 3);
-    }
   }
 
   #requestEndTurn = () => {
@@ -117,29 +85,21 @@ export class BattlePage {
    * @param {number} index
    * @param {number} col
    * @param {import("../ui/card-motion.js").DraggedCard} [drag]
+   * @returns {import("../types.js").PlayResult}
    */
   #tryPlay = (index, col, drag) => {
     if (this.#busy) {
-      return false;
+      return { ok: false, reason: "phase" };
     }
     const result = this.#battle.playCard(index, col);
     if (result.ok === false) {
-      this.#view.say(
-        result.reason === "afford"
-          ? "圣力不足，无法部署"
-          : result.reason === "occupied"
-            ? "这一列已经站着单位了"
-            : "现在不能出牌",
-        1.8,
-      );
-
-      return false;
+      return result;
     }
 
     this.#busy = true;
     this.#deploy(index, col, this.#ac.signal, drag);
 
-    return true;
+    return result;
   };
 
   /**
@@ -159,8 +119,6 @@ export class BattlePage {
     this.#ac.abort();
     this.#ac = new AbortController();
     this.#busy = true;
-    this.#seenAbilities.clear();
-    this.#sawIntentTip = false;
     this.#battle = this.#createBattle();
     this.#view.startBattle(this.#battle);
     this.#runResolution();

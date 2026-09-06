@@ -22,8 +22,6 @@ export class BattleHud {
   #candles;
   #maxHp = { enemy: 0, player: 0 };
   #lastHp = { enemy: 0, player: 0 };
-  /** @type {number | undefined} */
-  #statusTimer;
 
   /**
    * @param {HTMLElement} room
@@ -48,6 +46,8 @@ export class BattleHud {
     const mute = $("#mute-toggle", this.#stage);
     mute.textContent = muted ? "哑" : "音";
     mute.classList.toggle("muted", muted);
+    mute.title = muted ? "开启音效（M）" : "关闭音效（M）";
+    mute.setAttribute("aria-label", muted ? "开启音效" : "关闭音效");
   }
 
   /**
@@ -55,19 +55,8 @@ export class BattleHud {
    * @param {boolean} blocked
    */
   sync(battle, blocked) {
-    const hasPlayed = battle.stats.cardsPlayed > 0;
-    const abilities = battle.enemyIntents.filter(
-      (intent) => intent.kind === "ability",
-    );
-    const enemySub = $("#enemy-sub", this.#stage);
-    enemySub.textContent = [
-      battle.encounter.status,
-      ...abilities.map((intent) => intent.text),
-    ].join(" · ");
-    enemySub.classList.toggle("warn", abilities.length > 0);
-    const roundSeal = $("#round-seal", this.#stage);
+    $("#enemy-sub", this.#stage).textContent = battle.encounter.status;
     $("#round-number", this.#stage).textContent = String(battle.round);
-    roundSeal.classList.toggle("warn", abilities.length > 0);
     for (const [index, candle] of this.#candles.entries()) {
       candle.classList.toggle("lit", index < battle.energy);
     }
@@ -77,32 +66,30 @@ export class BattleHud {
       `牌库 ${battle.drawCount} · 弃 ${battle.discardCount}`;
 
     const canAct = !blocked && battle.phase === "player";
+    const canDeploy =
+      canAct &&
+      battle.playerBoard.some((unit) => !unit) &&
+      battle.hand.some((card) => card.cost <= battle.energy);
+    this.#stage.classList.toggle("can-deploy", canDeploy);
     const endTurn = $("#end-turn", this.#stage);
     endTurn.disabled = !canAct;
-    endTurn.classList.toggle("attract", canAct && !hasPlayed);
+    endTurn.classList.toggle("attract", canAct && !canDeploy);
+    $("span", endTurn).textContent = canAct
+      ? "结束回合"
+      : battle.phase === "over"
+        ? "战斗结束"
+        : battle.phase === "enemy"
+          ? "敌方行动"
+          : battle.phase === "combat"
+            ? "列位交锋"
+            : "准备中";
+    $("small", endTurn).textContent = canAct ? "结算所有列位 · E" : "";
     this.#stage.dataset.state =
       battle.phase === "over" ? "over" : canAct ? "play" : "busy";
-    $("#turn-state", this.#stage).textContent =
-      battle.phase === "over" ? "战斗结束" : canAct ? "你的回合" : "交锋中";
-  }
-
-  /**
-   * @param {string} text
-   * @param {number} [seconds]
-   */
-  say(text, seconds = 3) {
-    const status = $("#battle-status", this.#stage);
-    status.textContent = text;
-    window.clearTimeout(this.#statusTimer);
-    this.#statusTimer = window.setTimeout(() => {
-      status.textContent = "";
-    }, seconds * 1000);
   }
 
   /** @param {import("../game/battle.js").Battle} battle */
   startBattle(battle) {
-    window.clearTimeout(this.#statusTimer);
-    $("#battle-status", this.#stage).textContent = "";
     const encounter = battle.encounter;
     const { enemy, player } = this.#heroes;
     enemy.seal.textContent = encounter.hero.glyph;

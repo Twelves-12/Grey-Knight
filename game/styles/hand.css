@@ -88,6 +88,13 @@
   filter: brightness(1.1) saturate(1.06);
 }
 
+#stage.can-deploy .hand .card:not(.disabled, .selected) {
+  border-color: #c4a66d;
+  box-shadow:
+    0 0 0 1px #e8bf742e,
+    0 0 12px #d5a75b26;
+}
+
 .hand-card .c-heading {
   justify-content: start;
   gap: 7px;

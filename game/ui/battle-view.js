@@ -70,7 +70,6 @@ export class BattleView {
         cardTemplate,
         fxLayer: this.#fxLayer,
         hand,
-        notify: (text, seconds) => this.#hud.say(text, seconds),
         stage,
         tooltip: this.#tooltip,
         toggleMute: this.#toggleMute,
@@ -120,18 +119,9 @@ export class BattleView {
     this.#hud.sync(battle, blocked);
   }
 
-  /**
-   * @param {string} text
-   * @param {number} [seconds]
-   */
-  say(text, seconds) {
-    this.#hud.say(text, seconds);
-  }
-
   #toggleMute = () => {
     this.#audio.toggleMute();
     this.#hud.syncMute(this.#audio.muted);
-    this.#hud.say(this.#audio.muted ? "音效已关闭" : "音效已开启", 1.4);
   };
 
   /**
@@ -201,9 +191,6 @@ export class BattleView {
         break;
       }
       case "heroHit": {
-        if (event.origin.kind === "ability") {
-          this.#hud.say(event.origin.name, 1.8);
-        }
         await this.#animations.heroHit(event, signal, () => {
           this.#hud.setHeroHp(event.target, event.targetHp);
           this.#syncHud(battle, true);
@@ -237,7 +224,7 @@ export class BattleView {
       }
       case "reshuffle": {
         this.#audio.play("reshuffle");
-        this.#hud.say("弃牌已洗回牌库", 1.5);
+        this.#syncHud(battle, true);
 
         break;
       }
@@ -249,10 +236,7 @@ export class BattleView {
         break;
       }
       case "phase": {
-        this.#hud.say(
-          event.name === "enemy" ? "敌方行动…" : "列位结算…",
-          event.name === "enemy" ? 1.2 : 1,
-        );
+        this.#syncHud(battle, true);
         await wait(260, signal);
 
         break;
