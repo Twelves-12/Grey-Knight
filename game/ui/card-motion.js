@@ -1,25 +1,35 @@
+// 这里处理“卡从 A 移动到 B”时的临时假卡。
+//
+// 真卡先放到终点再藏起来，飞行结束才露出来。
+// 抽牌直接拿手牌的正面飞进来，敌方出卡直接拿战场小卡飞进来，都不翻面。
+// 玩家点击出牌时，从手牌翻成战场小卡，再落到格子里。
+// 起点只传位置；需要翻面时，再带上原来的手牌卡面
+// 拖牌也是先翻成小卡，跟着鼠标跑，能出就落下，不能就飞回手里。
+// 动画结束删掉假卡，只留下真卡。
 import { el, finishAnimations } from "./utils.js";
 
-/** @typedef {{ bounds: DOMRect; face: HTMLElement }} PlayedCardOrigin */
+/** @typedef {{ bounds: DOMRect; face?: HTMLElement }} CardOrigin */
 
 /**
+ * 手牌翻成战场小卡
+ *
  * @param {HTMLElement} turn
- * @param {boolean} faceUp
  * @param {KeyframeAnimationOptions} timing
  */
-const flipCard = (turn, faceUp, timing) =>
+const flipCard = (turn, timing) =>
   turn.animate(
     [
-      { transform: `perspective(900px) rotateY(${faceUp ? 0 : 170}deg)` },
+      { transform: "perspective(900px) rotateY(0deg)" },
       {
         offset: 0.72,
-        transform: `perspective(900px) rotateY(${faceUp ? 174 : -6}deg)`,
+        transform: "perspective(900px) rotateY(174deg)",
       },
-      { transform: `perspective(900px) rotateY(${faceUp ? 180 : 0}deg)` },
+      { transform: "perspective(900px) rotateY(180deg)" },
     ],
     timing,
   );
 
+/** 拖牌时跟着鼠标跑的假卡，不要动原本的真卡 */
 export class DraggedCard {
   #handCard;
   #flight;
@@ -27,6 +37,12 @@ export class DraggedCard {
   #animations;
 
   /**
+   * 拖动过程：
+   *
+   * - 创建假卡
+   * - 隐藏真卡
+   * - 假卡翻成战场小卡
+   *
    * @param {HTMLElement} handCard
    * @param {HTMLElement} boardCard
    * @param {DOMRect} size
@@ -59,11 +75,13 @@ export class DraggedCard {
         ],
         timing,
       ),
-      flipCard(turn, true, timing),
+      flipCard(turn, timing),
     ];
   }
 
   /**
+   * 跟随鼠标
+   *
    * @param {number} x
    * @param {number} y
    */
@@ -73,6 +91,8 @@ export class DraggedCard {
   }
 
   /**
+   * 出牌成功，假卡飞到战场上的真卡位置
+   *
    * @param {HTMLElement} card
    * @param {AbortSignal} signal
    */
@@ -94,6 +114,7 @@ export class DraggedCard {
     }
   }
 
+  /** 没出成就飞回手里 */
   returnToHand() {
     const target = this.#handCard.getBoundingClientRect();
     this.#handCard.style.visibility = "";
@@ -115,6 +136,7 @@ export class DraggedCard {
     movement.onfinish = () => this.remove();
   }
 
+  /** 把真手牌露出来，删掉假卡 */
   remove() {
     this.#handCard.style.visibility = "";
     for (const animation of this.#flight.getAnimations({ subtree: true })) {
@@ -126,26 +148,16 @@ export class DraggedCard {
 
 /**
  * @param {HTMLElement} card
- * @param {HTMLElement | PlayedCardOrigin | DraggedCard} origin
+ * @param {CardOrigin} origin
  * @param {HTMLElement} layer
  * @param {AbortSignal} signal
  */
 export async function dealCard(card, origin, layer, signal) {
-  if (origin instanceof DraggedCard) {
-    await origin.land(card, signal);
-
-    return;
-  }
-  const faceUp = !(origin instanceof HTMLElement);
-  const from = faceUp ? origin.bounds : origin.getBoundingClientRect();
+  const from = origin.bounds;
   const target = card.getBoundingClientRect();
   const dx = from.x + from.width / 2 - (target.x + target.width / 2);
   const dy = from.y + from.height / 2 - (target.y + target.height / 2);
-  const { flight, turn } = createFlight(
-    card,
-    target,
-    faceUp ? origin : undefined,
-  );
+  const { flight, turn } = createFlight(card, target, origin);
   card.style.visibility = "hidden";
   layer.append(flight);
   const timing = {
@@ -156,8 +168,8 @@ export async function dealCard(card, origin, layer, signal) {
   const animation = flight.animate(
     [
       {
-        opacity: faceUp ? 1 : 0,
-        transform: `translate(${dx}px, ${dy}px) rotate(${faceUp ? 0 : -8}deg) scale(${from.width / target.width}, ${from.height / target.height})`,
+        opacity: origin.face ? 1 : 0,
+        transform: `translate(${dx}px, ${dy}px) rotate(${origin.face ? 0 : -8}deg) scale(${from.width / target.width}, ${from.height / target.height})`,
       },
       {
         opacity: 1,
@@ -171,9 +183,12 @@ export async function dealCard(card, origin, layer, signal) {
     ],
     timing,
   );
-  const rotation = flipCard(turn, faceUp, timing);
+  const animations = [animation];
+  if (origin.face) {
+    animations.push(flipCard(turn, timing));
+  }
   try {
-    await finishAnimations([animation, rotation], signal);
+    await finishAnimations(animations, signal);
   } finally {
     flight.remove();
     card.style.visibility = "";
@@ -183,13 +198,10 @@ export async function dealCard(card, origin, layer, signal) {
 /**
  * @param {HTMLElement} card
  * @param {DOMRect} target
- * @param {PlayedCardOrigin} [origin]
+ * @param {CardOrigin} origin
  */
 function createFlight(card, target, origin) {
-  const flight = el(
-    "div",
-    `card-flight ${card.classList.contains("enemy") ? "enemy" : "player"}`,
-  );
+  const flight = el("div", "card-flight");
   flight.style.left = `${target.x}px`;
   flight.style.top = `${target.y}px`;
   flight.style.width = `${target.width}px`;
@@ -197,7 +209,7 @@ function createFlight(card, target, origin) {
   const turn = el("div", "card-turn");
   flight.append(turn);
   const arrival = cloneFace(card);
-  if (origin) {
+  if (origin.face) {
     const from = origin.bounds;
     const departure = cloneFace(origin.face);
     departure.style.width = `${from.width}px`;
@@ -208,13 +220,17 @@ function createFlight(card, target, origin) {
     arrival.classList.add("card-arrival");
     turn.append(departure, arrival);
   } else {
-    turn.append(arrival, el("div", "card-back"));
+    turn.append(arrival);
   }
 
   return { flight, turn };
 }
 
-/** @param {HTMLElement} card */
+/**
+ * 复制卡面给动画用，移除一些不必要的属性和类
+ *
+ * @param {HTMLElement} card
+ */
 function cloneFace(card) {
   const face = card.cloneNode(true);
   face.classList.remove("selected", "disabled", "dragging");

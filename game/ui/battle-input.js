@@ -60,26 +60,20 @@ export class BattleInput {
     this.#toggleMute = elements.toggleMute;
   }
 
-  /** @param {AbortSignal} signal */
-  attach(signal) {
-    this.#hand.addEventListener("pointerdown", this.#onHandPointerDown, {
-      signal,
-    });
-    window.addEventListener("pointermove", this.#onPointerMove, { signal });
-    window.addEventListener("pointerup", this.#onPointerUp, { signal });
-    window.addEventListener("pointercancel", this.#onPointerCancel, { signal });
-    this.#stage.addEventListener("pointerdown", this.#onStagePointerDown, {
-      signal,
-    });
-    document.addEventListener("keydown", this.#onKeyDown, { signal });
+  attach() {
+    this.#hand.addEventListener("pointerdown", this.#onHandPointerDown);
+    window.addEventListener("pointermove", this.#onPointerMove);
+    window.addEventListener("pointerup", this.#onPointerUp);
+    window.addEventListener("pointercancel", this.#onPointerCancel);
+    this.#stage.addEventListener("pointerdown", this.#onStagePointerDown);
+    document.addEventListener("keydown", this.#onKeyDown);
     document.addEventListener("pointerdown", () => this.#audio.unlock(), {
       once: true,
-      signal,
     });
     const endTurn = $("#end-turn", this.#stage);
     const mute = $("#mute-toggle", this.#stage);
-    endTurn.addEventListener("click", this.#controls.endTurn, { signal });
-    mute.addEventListener("click", this.#toggleMute, { signal });
+    endTurn.addEventListener("click", this.#controls.endTurn);
+    mute.addEventListener("click", this.#toggleMute);
   }
 
   reset() {

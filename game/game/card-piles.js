@@ -45,12 +45,18 @@ export class CardPiles {
       return { card: undefined, reshuffled: false };
     }
     let reshuffled = false;
+    // 如果抽牌堆空了就把弃牌堆洗回去
     if (this.#draw.length === 0 && this.#discard.length > 0) {
       reshuffled = true;
       this.#draw = this.#random.shuffled(this.#discard);
       this.#discard.length = 0;
     }
     const card = this.#draw.pop();
+
+    // 这里可能没有牌
+    // 1. 开局牌库本来就是空的
+    // 2. 抽完了牌库，弃牌堆也为空
+    // 3. 卡牌仍在手牌或战场上，尚未进入弃牌堆
     if (card) {
       this.#hand.push(card);
     }

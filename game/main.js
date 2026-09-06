@@ -1,26 +1,20 @@
-import { syncSiteChrome } from "../js/site.js";
-import { GameApp } from "./app/app.js";
-import { player, savePlayer } from "./app/sl.js";
 import { GameAudio } from "./audio/audio.js";
+import { GREY_KNIGHT } from "./content/player.js";
 import { AbyssFront } from "./encounters/abyss-front.js";
 import { BattlePage } from "./pages/battle-page.js";
+import { requireSession } from "./session.js";
 
-const audio = new GameAudio();
+import "../js/site.js";
 
-const pages = {
-  battle:
-    /** @param {HTMLElement} room */
-    (room) => {
-      const seed = new URLSearchParams(location.search).get("seed");
+if (requireSession()) {
+  const room = document.querySelector('[data-room="battle"]');
+  const seed = new URLSearchParams(location.search).get("seed");
+  const page = new BattlePage(room, {
+    seed: seed === null ? undefined : Number(seed) >>> 0,
+    audio: new GameAudio(),
+    createEncounter: (seed) => new AbyssFront(seed),
+    player: GREY_KNIGHT,
+  });
 
-      return new BattlePage(room, {
-        ...(seed === null ? {} : { seed: Number(seed) >>> 0 }),
-        audio,
-        createEncounter: (seed) => new AbyssFront(seed),
-        onVictory: (health) => savePlayer({ ...player, health }),
-        player,
-      });
-    },
-};
-
-await new GameApp(pages, syncSiteChrome).start();
+  await page.enter();
+}

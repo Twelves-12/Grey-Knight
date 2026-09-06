@@ -1,42 +1,25 @@
+// TODO: 整个文件都需要重构。目前只是一个纯战斗demo，之后要跟随不同关卡和剧情变更
 import { Battle } from "../game/battle.js";
 import { BattleView } from "../ui/battle-view.js";
-import { wait } from "../ui/utils.js";
 
 /**
  * @typedef {import("../types.js").EncounterFactory} EncounterFactory
  * @typedef {import("../types.js").PlayerSetup} PlayerSetup
- * @typedef {import("../types.js").ResultKind} ResultKind
  * @typedef {{
  *   audio: import("../audio/audio.js").GameAudio;
  *   createEncounter: EncounterFactory;
- *   onVictory: (health: number) => void;
  *   player: PlayerSetup;
  *   seed?: number;
  * }} BattlePageOptions
  */
 
-/** @type {Record<"defeat" | "draw", import("../types.js").ResultContent>} */
-const ENDINGS = {
-  defeat: {
-    accent: "defeat",
-    flavor: ["圣焰熄灭，阵地失守。", "灰烬之中，会有人接过这把剑。"],
-    title: "骑士陨落",
-  },
-  draw: {
-    accent: "draw",
-    flavor: ["火光与影子同时归于寂静。", "仿佛谁也没赢。"],
-    title: "同归于寂",
-  },
-};
-
 export class BattlePage {
-  #audio;
   #nextSeed;
   #createEncounter;
   #player;
-  #onVictory;
   #ac = new AbortController();
   #battle;
+  // 模型进入玩家回合时，动画可能还没播完，这个锁得单独留着。
   #busy = true;
   /** @type {Set<string>} */
   #seenAbilities = new Set();
@@ -48,20 +31,18 @@ export class BattlePage {
    * @param {BattlePageOptions} options
    */
   constructor(room, options) {
-    this.#audio = options.audio;
     this.#createEncounter = options.createEncounter;
     this.#player = options.player;
-    this.#onVictory = options.onVictory;
     this.#nextSeed =
       options.seed ?? crypto.getRandomValues(new Uint32Array(1))[0];
     this.#battle = this.#createBattle();
     this.#view = new BattleView(room, {
       player: this.#player,
-      audio: this.#audio,
+      audio: options.audio,
       controls: {
         getBattle: () => this.#battle,
         canAct: this.#canAct,
-        play: (index, col, drag) => this.#tryPlay(index, col, drag),
+        play: this.#tryPlay,
         endTurn: this.#requestEndTurn,
         restart: this.#restart,
       },
@@ -74,48 +55,7 @@ export class BattlePage {
     await this.#runResolution();
   }
 
-  destroy() {
-    this.#ac.abort();
-    this.#view.destroy();
-  }
-
   #canAct = () => !this.#busy && this.#battle.phase === "player";
-
-  /**
-   * @param {ResultKind} kind
-   * @param {AbortSignal} signal
-   */
-  async #finishBattle(kind, signal) {
-    await wait(kind === "victory" ? 500 : 700, signal);
-    if (signal.aborted) {
-      return;
-    }
-
-    const stats = this.#battle.stats;
-    const content =
-      kind === "victory"
-        ? { accent: kind, ...this.#battle.encounter.victory }
-        : ENDINGS[kind];
-    const result = {
-      ...content,
-      stats: {
-        damageDealt: stats.heroDamageDealt,
-        damageTaken: stats.heroDamageTaken,
-        kills: stats.enemyUnitsSlain,
-        played: stats.cardsPlayed,
-        rounds: this.#battle.round,
-      },
-    };
-    if (kind === "victory") {
-      this.#onVictory(this.#battle.playerHealth);
-      this.#audio.play("victory");
-    } else if (kind === "defeat") {
-      this.#audio.play("defeat");
-    } else {
-      this.#audio.play("doom");
-    }
-    this.#view.showResult(this.#battle, result);
-  }
 
   async #runResolution() {
     const signal = this.#ac.signal;
@@ -127,18 +67,7 @@ export class BattlePage {
       if (!event) {
         break;
       }
-      switch (event.kind) {
-        case "victory":
-        case "defeat":
-        case "draw": {
-          await this.#finishBattle(event.kind, signal);
-
-          break;
-        }
-        default: {
-          await this.#view.playEvent(event, this.#battle, signal);
-        }
-      }
+      await this.#view.playEvent(event, this.#battle, signal);
     }
     if (signal.aborted) {
       return;
@@ -161,7 +90,7 @@ export class BattlePage {
         intent.kind === "ability" && !this.#seenAbilities.has(intent.name),
     );
     const summon = intents.find((intent) => intent.kind === "summon");
-    if (ability?.kind === "ability") {
+    if (ability) {
       this.#seenAbilities.add(ability.name);
       this.#view.say(ability.text, 5);
     } else if (summon && !this.#sawIntentTip) {
@@ -189,7 +118,7 @@ export class BattlePage {
    * @param {number} col
    * @param {import("../ui/card-motion.js").DraggedCard} [drag]
    */
-  #tryPlay(index, col, drag) {
+  #tryPlay = (index, col, drag) => {
     if (this.#busy) {
       return false;
     }
@@ -211,7 +140,7 @@ export class BattlePage {
     this.#deploy(index, col, this.#ac.signal, drag);
 
     return true;
-  }
+  };
 
   /**
    * @param {number} index

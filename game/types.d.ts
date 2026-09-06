@@ -132,16 +132,6 @@ export interface ResultContent {
   title: string;
 }
 
-export interface BattleResult extends ResultContent {
-  stats: {
-    damageDealt: number;
-    damageTaken: number;
-    kills: number;
-    played: number;
-    rounds: number;
-  };
-}
-
 export interface HeroElements {
   fill: HTMLElement;
   root: HTMLElement;
@@ -155,17 +145,4 @@ export type HeroesBySide = Record<Side, HeroElements>;
 export interface BattleCells {
   enemy: HTMLElement[];
   player: HTMLElement[];
-}
-
-export interface Page {
-  enter: () => void | Promise<void>;
-  destroy: () => void;
-}
-
-export type PageFactory = (room: HTMLElement) => Page;
-
-export interface PlayerSave {
-  deck: string[];
-  health: number;
-  maxHealth: number;
 }

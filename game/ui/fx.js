@@ -1,4 +1,4 @@
-import { el, wait } from "./utils.js";
+import { el, finishAnimations } from "./utils.js";
 
 export const FX_COLORS = {
   hurt: "#ff7a5c",
@@ -9,24 +9,28 @@ export const FX_COLORS = {
 };
 
 /**
+ * 悬浮文字。用于显示伤害、治疗等数值。
+ *
  * @param {HTMLElement} layer
  * @param {number} x
  * @param {number} y
  * @param {string} text
- * @param {{ readonly color?: string; readonly size?: number }} [options]
+ * @param {{ color: string; size: number }} options
  */
-export function floatText(layer, x, y, text, options = {}) {
+export function floatText(layer, x, y, text, options) {
   const node = el("div", "float-dmg", text);
 
   node.style.left = `${x}px`;
   node.style.top = `${y}px`;
-  node.style.color = options.color ?? FX_COLORS.hurt;
-  node.style.fontSize = `${options.size ?? 17}px`;
+  node.style.color = options.color;
+  node.style.fontSize = `${options.size}px`;
   layer.append(node);
   setTimeout(() => node.remove(), 1050);
 }
 
 /**
+ * 从指定位置散射火花
+ *
  * @param {HTMLElement} layer
  * @param {number} x
  * @param {number} y
@@ -56,6 +60,8 @@ export function burst(layer, x, y, count, colorList) {
 }
 
 /**
+ * 单位死亡时散落余烬
+ *
  * @param {HTMLElement} layer
  * @param {number} x
  * @param {number} y
@@ -74,23 +80,27 @@ export function cinders(layer, x, y, shadow) {
 }
 
 /**
+ * 在攻击落点闪现冲击印记
+ *
  * @param {HTMLElement} layer
  * @param {number} x
  * @param {number} y
- * @param {{ lethal?: boolean; shadow?: boolean }} [options]
+ * @param {{ lethal: boolean; shadow: boolean }} options
  */
-export function impact(layer, x, y, options = {}) {
+export function impact(layer, x, y, options) {
   const node = el("div", "impact-mark");
 
   node.style.left = `${x}px`;
   node.style.top = `${y}px`;
-  node.classList.toggle("lethal", options.lethal ?? false);
-  node.classList.toggle("shadow", options.shadow ?? false);
+  node.classList.toggle("lethal", options.lethal);
+  node.classList.toggle("shadow", options.shadow);
   layer.append(node);
   setTimeout(() => node.remove(), 600);
 }
 
 /**
+ * 显示单位攻击英雄的飞行轨迹
+ *
  * @param {HTMLElement} layer
  * @param {readonly [number, number]} from
  * @param {readonly [number, number]} to
@@ -107,20 +117,30 @@ export async function heroTrail(layer, from, to, shadow, signal) {
   node.style.setProperty("--angle", `${Math.atan2(dy, dx)}rad`);
   node.classList.toggle("shadow", shadow);
   layer.append(node);
-  const duration = 360;
-  node.animate(
+  const animation = node.animate(
     [
       { translate: "0px 0px", opacity: 0 },
       { offset: 0.14, opacity: 1 },
       { translate: `${dx}px ${dy}px`, opacity: 1 },
     ],
-    { duration, easing: "cubic-bezier(0.35, 0, 0.75, 0.7)", fill: "forwards" },
+    {
+      duration: 360,
+      easing: "cubic-bezier(0.35, 0, 0.75, 0.7)",
+      fill: "forwards",
+    },
   );
-  await wait(duration, signal);
-  node.remove();
+  try {
+    await finishAnimations([animation], signal);
+  } finally {
+    node.remove();
+  }
 }
 
-/** @param {HTMLElement} layer */
+/**
+ * 用红色闪光强调英雄受击
+ *
+ * @param {HTMLElement} layer
+ */
 export function redFlash(layer) {
   const node = el("div", "flash-red");
 

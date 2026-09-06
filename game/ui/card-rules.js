@@ -1,7 +1,7 @@
 import { el } from "./utils.js";
 
 /**
- * 卡面和详情共用的规则排版：每个效果独立成段，触发条件与数值分层显示。
+ * 卡面和详情共用的规则排
  *
  * @param {import("../types.js").CardDef} def
  * @param {import("../types.js").Side} side

@@ -11,7 +11,6 @@ const pages = [
 class SiteHeader extends HTMLElement {
   connectedCallback() {
     const active = this.getAttribute("active");
-    const room = this.closest("[data-room]");
     this.innerHTML = `
       <header class="site-nav">
         <a class="site-brand" href="/index.html">
@@ -27,9 +26,6 @@ class SiteHeader extends HTMLElement {
       link.href = href;
       link.textContent = label;
       link.classList.toggle("active", active === id);
-      if (room && (id === "game" || id === "rules") && active !== id) {
-        link.setAttribute("data-room-link", "");
-      }
       navigation.append(link);
     }
     this.#renderAccount();

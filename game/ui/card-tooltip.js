@@ -2,6 +2,9 @@ import { applyCardSigil } from "./card-icons.js";
 import { createCardRules } from "./card-rules.js";
 import { clamp, el } from "./utils.js";
 
+/**
+ * 卡牌悬浮时的美观提示
+ */
 export class CardTooltip {
   /** @type {HTMLElement | undefined} */
   #anchor;
@@ -48,11 +51,7 @@ export class CardTooltip {
       const preview = battle.enemyIntents.find(
         (intent) => intent.kind === "summon" && intent.col === col,
       );
-      const def =
-        unit?.def ??
-        (side === "enemy" && preview?.kind === "summon"
-          ? preview.def
-          : undefined);
+      const def = unit?.def ?? (side === "enemy" ? preview?.def : undefined);
       if (def) {
         this.#show(unitCard, x, y, def, unit?.hp ?? def.health, side);
 
@@ -84,7 +83,7 @@ export class CardTooltip {
    */
   #show(anchor, x, y, def, hp, side, showCost = false) {
     if (this.#anchor === anchor) {
-      this.#position(x, y);
+      this.#reposition(x, y);
 
       return;
     }
@@ -116,18 +115,15 @@ export class CardTooltip {
     this.#anchor = anchor;
     this.#element = tip;
     this.#root.append(tip);
-    this.#position(x, y);
+    this.#reposition(x, y);
   }
 
   /**
    * @param {number} x
    * @param {number} y
    */
-  #position(x, y) {
+  #reposition(x, y) {
     const tip = this.#element;
-    if (!tip) {
-      return;
-    }
     const rect = tip.getBoundingClientRect();
     const margin = 12;
     tip.style.left = `${clamp(

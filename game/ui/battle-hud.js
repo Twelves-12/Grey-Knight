@@ -43,11 +43,6 @@ export class BattleHud {
     return this.#heroes;
   }
 
-  destroy() {
-    window.clearTimeout(this.#statusTimer);
-    $("#battle-status", this.#stage).textContent = "";
-  }
-
   /** @param {boolean} muted */
   syncMute(muted) {
     const mute = $("#mute-toggle", this.#stage);
@@ -106,7 +101,8 @@ export class BattleHud {
 
   /** @param {import("../game/battle.js").Battle} battle */
   startBattle(battle) {
-    this.destroy();
+    window.clearTimeout(this.#statusTimer);
+    $("#battle-status", this.#stage).textContent = "";
     const encounter = battle.encounter;
     const { enemy, player } = this.#heroes;
     enemy.seal.textContent = encounter.hero.glyph;

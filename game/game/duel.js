@@ -5,16 +5,20 @@
  * @param {import("../types.js").Unit} enemy
  */
 export function resolveDuel(player, enemy) {
-  const enemyFirst =
-    enemy.def.keyword === "firstStrike" && player.def.keyword !== "firstStrike";
-  const first = enemyFirst ? enemy : player;
-  const second = enemyFirst ? player : enemy;
-  const firstSide = enemyFirst ? "enemy" : "player";
-  const secondSide = enemyFirst ? "player" : "enemy";
-  const interrupts =
-    first.def.keyword === "firstStrike" && second.def.keyword !== "firstStrike";
+  const playerHasFirstStrike = player.def.keyword === "firstStrike";
+  const enemyHasFirstStrike = enemy.def.keyword === "firstStrike";
+  // 无人或双方均有先手时，玩家优先
+  const playerStrikesFirst = playerHasFirstStrike || !enemyHasFirstStrike;
+  const first = playerStrikesFirst ? player : enemy;
+  const second = playerStrikesFirst ? enemy : player;
+  const firstSide = playerStrikesFirst ? "player" : "enemy";
+  const secondSide = playerStrikesFirst ? "enemy" : "player";
+
   const hits = [strike(first, second, firstSide)];
-  if (!interrupts || second.hp > 0) {
+
+  // 只有一边有先手时，才提前结算是否死亡，否则正常进行
+  const exclusiveFirstStrike = playerHasFirstStrike !== enemyHasFirstStrike;
+  if (!exclusiveFirstStrike || second.hp > 0) {
     hits.push(strike(second, first, secondSide));
   }
 

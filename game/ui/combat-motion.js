@@ -1,4 +1,6 @@
 /**
+ * 让攻击单位向目标突进后归位。
+ *
  * @param {Element} card
  * @param {Element} targetCard
  * @param {"player" | "enemy"} side
@@ -42,6 +44,10 @@ export function animateStrike(card, targetCard, side) {
 }
 
 /**
+ * 让受击单位短暂后退并闪白。
+ *
+ * TODO: 重做。这个动画看着很鬼畜
+ *
  * @param {HTMLElement} card
  * @param {"player" | "enemy"} attacker
  */
@@ -66,7 +72,11 @@ export function animateRecoil(card, attacker) {
   );
 }
 
-/** @param {HTMLElement} hero */
+/**
+ * 让受击英雄短暂后仰。
+ *
+ * @param {HTMLElement} hero
+ */
 export function animateHeroRecoil(hero) {
   hero.animate(
     [
@@ -87,7 +97,13 @@ export function animateHeroRecoil(hero) {
   );
 }
 
-/** @param {HTMLElement} card */
+/**
+ * 播放单位死亡动画，结束后移除卡牌。
+ *
+ * TODO: 重做。最好弄成杀戮尖塔2新版的删牌效果
+ *
+ * @param {HTMLElement} card
+ */
 export function animateDeath(card) {
   if (card.classList.contains("dead")) {
     return;

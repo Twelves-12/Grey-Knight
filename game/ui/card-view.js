@@ -3,6 +3,8 @@ import { applyCardSigil, plaqueMarkMarkup } from "./card-icons.js";
 import { createCardRules } from "./card-rules.js";
 
 /**
+ * 设置卡牌的属性标记和数值
+ *
  * @param {HTMLElement} plaque
  * @param {"cost" | "atk" | "hp"} kind
  * @param {number} value
@@ -39,12 +41,15 @@ export function createCard(template, def, side, options = {}) {
   );
   const effect = $(".c-effect", card);
   const cost = $(".c-cost", card);
+
+  // 对于场上的卡牌（不在手牌里，在战场上），不显示规则和消耗
   if (!options.inHand) {
     effect.remove();
     cost.remove();
 
     return card;
   }
+
   effect.replaceWith(createCardRules(def, side));
   setPlaque(cost, "cost", def.cost);
 

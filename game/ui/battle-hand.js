@@ -1,23 +1,16 @@
-import { dealCard } from "./card-motion.js";
 import { createCard } from "./card-view.js";
 
 export class BattleHand {
   #element;
   #template;
-  #deck;
-  #layer;
 
   /**
    * @param {HTMLElement} element
    * @param {HTMLTemplateElement} template
-   * @param {HTMLElement} deck
-   * @param {HTMLElement} layer
    */
-  constructor(element, template, deck, layer) {
+  constructor(element, template) {
     this.#element = element;
     this.#template = template;
-    this.#deck = deck;
-    this.#layer = layer;
   }
 
   reset() {
@@ -30,16 +23,16 @@ export class BattleHand {
 
   /**
    * @param {import("../types.js").CardDef} def
-   * @param {AbortSignal} signal
    */
-  async deal(def, signal) {
+  add(def) {
     const positions = this.#measure();
     const card = createCard(this.#template, def, "player", { inHand: true });
     card.dataset.index = String(this.#element.children.length);
     this.#element.append(card);
     this.#element.scrollLeft = this.#element.scrollWidth;
     this.#reflow(positions);
-    await dealCard(card, this.#deck, this.#layer, signal);
+
+    return card;
   }
 
   /** @param {number} index */

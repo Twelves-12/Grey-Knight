@@ -1,3 +1,4 @@
+// 让AI做了一个比较酷炫的开场动画
 const introMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const introKey = "grey-knight:intro";
 const introRoot = document.documentElement;

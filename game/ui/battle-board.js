@@ -1,6 +1,5 @@
 import { $, $$ } from "../../js/dom.js";
 import { LANE_COUNT } from "../game/rules.js";
-import { dealCard } from "./card-motion.js";
 import { createCard, setCardHp } from "./card-view.js";
 import { animateDeath } from "./combat-motion.js";
 import { el, finishAnimations } from "./utils.js";
@@ -14,7 +13,6 @@ import { el, finishAnimations } from "./utils.js";
 export class BattleBoard {
   #element;
   #cardTemplate;
-  #fxLayer;
   /** @type {HTMLElement | undefined} */
   #omen;
   /** @type {BattleCells} */
@@ -23,12 +21,10 @@ export class BattleBoard {
   /**
    * @param {HTMLElement} element
    * @param {HTMLTemplateElement} cardTemplate
-   * @param {HTMLElement} fxLayer
    */
-  constructor(element, cardTemplate, fxLayer) {
+  constructor(element, cardTemplate) {
     this.#element = element;
     this.#cardTemplate = cardTemplate;
-    this.#fxLayer = fxLayer;
     this.#cells = {
       enemy: [...$$('.lane-cell[data-side="enemy"]', element)],
       player: [...$$('.lane-cell[data-side="player"]', element)],
@@ -55,14 +51,12 @@ export class BattleBoard {
    * @param {Side} side
    * @param {number} col
    * @param {Unit} unit
-   * @param {HTMLElement | import("./card-motion.js").PlayedCardOrigin | import("./card-motion.js").DraggedCard} origin
-   * @param {AbortSignal} signal
    */
-  async deal(side, col, unit, origin, signal) {
+  place(side, col, unit) {
     const cell = this.#cells[side][col];
     cell.querySelector(".enemy-intent")?.remove();
-    const card = this.#placeCard(cell, unit, side);
-    await dealCard(card, origin, this.#fxLayer, signal);
+
+    return this.#placeCard(cell, unit, side);
   }
 
   reset() {
@@ -137,10 +131,7 @@ export class BattleBoard {
         (intent) => intent.kind === "summon" && intent.col === col,
       );
       const existing = $(".enemy-intent", cell);
-      const show =
-        summon?.kind === "summon" &&
-        !battle.enemyBoard[col] &&
-        battle.phase !== "over";
+      const show = summon && !battle.enemyBoard[col] && battle.phase !== "over";
       if (!show) {
         existing?.remove();
 

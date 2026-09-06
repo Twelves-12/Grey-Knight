@@ -1,15 +1,8 @@
 .card-flight {
-  --flight-ink: #c9a972;
-  --flight-bg: #24271e;
   position: fixed;
   container-type: inline-size;
   pointer-events: none;
   will-change: transform, opacity;
-}
-
-.card-flight.enemy {
-  --flight-ink: #ad8fae;
-  --flight-bg: #302437;
 }
 
 .card-flight.dragging {
@@ -23,53 +16,17 @@
   will-change: transform;
 }
 
-.card-turn > .card,
-.card-back {
+.card-turn > .card {
   position: absolute;
   inset: 0;
   margin: 0;
   min-width: 0;
   backface-visibility: hidden;
-}
-
-.card-turn > .card {
   transition: none;
 }
 
 .card-turn > .card-arrival {
   transform: rotateY(180deg);
-}
-
-.card-back {
-  border: 2px solid var(--flight-ink);
-  border-radius: 6px;
-  background:
-    repeating-linear-gradient(45deg, transparent 0 7px, #ffffff05 7px 8px),
-    radial-gradient(ellipse at center, #ffffff10, transparent 70%),
-    var(--flight-bg);
-  box-shadow:
-    inset 0 0 0 4px #0008,
-    0 12px 25px #0008;
-  transform: rotateY(180deg);
-}
-
-.card-back::before {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  border: 1px solid var(--flight-ink);
-  opacity: 0.5;
-}
-
-.card-back::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 32%;
-  aspect-ratio: 1;
-  border: 4px double var(--flight-ink);
-  transform: rotate(45deg);
 }
 
 .card.dead {

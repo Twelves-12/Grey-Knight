@@ -4,8 +4,23 @@ import { BattleBoard } from "./battle-board.js";
 import { BattleHand } from "./battle-hand.js";
 import { BattleHud } from "./battle-hud.js";
 import { BattleInput } from "./battle-input.js";
+import { dealCard } from "./card-motion.js";
 import { CardTooltip } from "./card-tooltip.js";
 import { wait } from "./utils.js";
+
+/** @type {Record<"defeat" | "draw", import("../types.js").ResultContent>} */
+const ENDINGS = {
+  defeat: {
+    accent: "defeat",
+    flavor: ["圣焰熄灭，阵地失守。", "灰烬之中，会有人接过这把剑。"],
+    title: "骑士陨落",
+  },
+  draw: {
+    accent: "draw",
+    flavor: ["火光与影子同时归于寂静。", "仿佛谁也没赢。"],
+    title: "同归于寂",
+  },
+};
 
 export class BattleView {
   #audio;
@@ -19,7 +34,6 @@ export class BattleView {
   #overlayRoot;
   #resultTemplate;
   #restart;
-  #lifetime = new AbortController();
 
   /**
    * @param {HTMLElement} room
@@ -39,17 +53,8 @@ export class BattleView {
     this.#overlayRoot = $("#overlay-root", room);
     this.#resultTemplate = $("#result-template", room);
     this.#hud = new BattleHud(room, player);
-    this.#board = new BattleBoard(
-      $("#board", stage),
-      cardTemplate,
-      this.#fxLayer,
-    );
-    this.#hand = new BattleHand(
-      hand,
-      cardTemplate,
-      this.#hud.heroes.player.seal,
-      this.#fxLayer,
-    );
+    this.#board = new BattleBoard($("#board", stage), cardTemplate);
+    this.#hand = new BattleHand(hand, cardTemplate);
     this.#tooltip = new CardTooltip(this.#overlayRoot);
     this.#animations = new BattleAnimations({
       audio,
@@ -75,14 +80,8 @@ export class BattleView {
   }
 
   attach() {
-    this.#input.attach(this.#lifetime.signal);
+    this.#input.attach();
     this.#hud.syncMute(this.#audio.muted);
-  }
-
-  destroy() {
-    this.#lifetime.abort();
-    this.#reset();
-    this.#hud.destroy();
   }
 
   /** @param {import("../game/battle.js").Battle} battle */
@@ -147,28 +146,42 @@ export class BattleView {
     this.#input.reset();
     this.#syncHud(battle, true);
     const unit = battle.playerBoard[col];
-    await this.#board.deal("player", col, unit, drag ?? origin, signal);
+    const card = this.#board.place("player", col, unit);
+    if (drag) {
+      await drag.land(card, signal);
+    } else {
+      await dealCard(card, origin, this.#fxLayer, signal);
+    }
     if (!signal.aborted) {
       this.#audio.play("place");
     }
   }
 
   /**
-   * @param {Exclude<
-   *   import("../types.js").BattleEvent,
-   *   { kind: import("../types.js").ResultKind }
-   * >} event
+   * @param {import("../types.js").BattleEvent} event
    * @param {import("../game/battle.js").Battle} battle
    * @param {AbortSignal} signal
    */
   async playEvent(event, battle, signal) {
     switch (event.kind) {
+      case "victory":
+      case "defeat":
+      case "draw": {
+        await wait(event.kind === "victory" ? 500 : 700, signal);
+        if (signal.aborted) {
+          return;
+        }
+        this.#audio.play(event.kind === "draw" ? "doom" : event.kind);
+        this.#showResult(battle, event.kind);
+
+        break;
+      }
       case "summon": {
-        await this.#board.deal(
-          "enemy",
-          event.col,
-          event.unit,
-          this.#hud.heroes.enemy.seal,
+        const card = this.#board.place("enemy", event.col, event.unit);
+        await dealCard(
+          card,
+          { bounds: this.#hud.heroes.enemy.seal.getBoundingClientRect() },
+          this.#fxLayer,
           signal,
         );
         if (signal.aborted) {
@@ -208,7 +221,13 @@ export class BattleView {
       case "drawCard": {
         this.#tooltip.hide();
         this.#audio.play("draw");
-        await this.#hand.deal(event.card, signal);
+        const card = this.#hand.add(event.card);
+        await dealCard(
+          card,
+          { bounds: this.#hud.heroes.player.seal.getBoundingClientRect() },
+          this.#fxLayer,
+          signal,
+        );
         if (signal.aborted) {
           return;
         }
@@ -251,9 +270,14 @@ export class BattleView {
 
   /**
    * @param {import("../game/battle.js").Battle} battle
-   * @param {import("../types.js").BattleResult} content
+   * @param {import("../types.js").ResultKind} kind
    */
-  showResult(battle, content) {
+  #showResult(battle, kind) {
+    const content =
+      kind === "victory"
+        ? { accent: kind, ...battle.encounter.victory }
+        : ENDINGS[kind];
+    const stats = battle.stats;
     this.#board.render(battle);
     this.#board.renderIntent(battle);
     this.#overlayRoot.replaceChildren();
@@ -265,15 +289,15 @@ export class BattleView {
     for (const [index, line] of content.flavor.entries()) {
       flavorLines[index].textContent = line;
     }
-    $("#result-rounds", panel).textContent = String(content.stats.rounds);
+    $("#result-rounds", panel).textContent = String(battle.round);
     $("#result-damage-dealt", panel).textContent = String(
-      content.stats.damageDealt,
+      stats.heroDamageDealt,
     );
     $("#result-damage-taken", panel).textContent = String(
-      content.stats.damageTaken,
+      stats.heroDamageTaken,
     );
-    $("#result-played", panel).textContent = String(content.stats.played);
-    $("#result-kills", panel).textContent = String(content.stats.kills);
+    $("#result-played", panel).textContent = String(stats.cardsPlayed);
+    $("#result-kills", panel).textContent = String(stats.enemyUnitsSlain);
     const again = $("#restart-battle", panel);
     again.classList.add(content.accent === "defeat" ? "danger" : "primary");
     again.textContent = content.accent === "victory" ? "再赴战线" : "重燃圣焰";

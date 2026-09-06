@@ -13,10 +13,16 @@ export class Random {
     return Math.floor(this.next() * maxExclusive);
   }
 
+  /**
+   * 把当前随机数生成器复制一个。方便不同的系统，比如抽牌和事件，不互相影响
+   */
   fork() {
     return new Random(this.integer(UINT32_RANGE));
   }
 
+  /**
+   * Mulberry32 算法实现的固定随机数生成器
+   */
   next() {
     this.#state = (this.#state + 0x6d_2b_79_f5) >>> 0;
 
@@ -29,6 +35,8 @@ export class Random {
   }
 
   /**
+   * fisher-yates 算法
+   *
    * @template T
    * @param {readonly T[]} values
    */
