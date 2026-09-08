@@ -18,7 +18,8 @@ window.addEventListener("storage", (event) => {
 });
 
 if (requireSession()) {
-  const entry = GAME_PAGES[location.pathname];
+  const path = location.pathname.replace(/\.html$/, "");
+  const entry = GAME_PAGES[path];
   if (entry !== null) {
     await import(entry);
   }

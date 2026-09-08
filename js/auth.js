@@ -4,7 +4,11 @@ import { GAME_PAGES } from "../game/session.js";
 const form = document.forms[0];
 const requestedNext = new URLSearchParams(location.search).get("next");
 const next =
-  requestedNext && Object.hasOwn(GAME_PAGES, requestedNext.split(/[?#]/, 1)[0])
+  requestedNext &&
+  Object.hasOwn(
+    GAME_PAGES,
+    requestedNext.split(/[?#]/, 1)[0].replace(/\.html$/, ""),
+  )
     ? requestedNext
     : null;
 if (next) {
