@@ -25,6 +25,38 @@ export function createCardRules(def, side) {
     switch (effect.kind) {
       case "damageHero": {
         text.append("对敌方英雄造成 ", count, " 点伤害。");
+        if (effect.faction === "duke" && effect.multiplier === 2) {
+          text.append("若敌方是公爵阵营则伤害翻倍。");
+        }
+
+        break;
+      }
+      case "armor": {
+        text.append("获得 ", count, " 点护甲。");
+
+        break;
+      }
+      case "buffAttackAllies": {
+        text.append("所有友方单位 +", count, " 攻击。");
+
+        break;
+      }
+      case "buffHealthAllies": {
+        text.append("所有友方单位 +", count, " 生命。");
+
+        break;
+      }
+      case "summon": {
+        const summonNames = {
+          royalGuard: "王室卫兵",
+          tentacle: "触手",
+        };
+        text.append(`召唤 1 张【${summonNames[effect.cardId] ?? "单位牌"}】。`);
+
+        break;
+      }
+      case "randomBuff": {
+        text.append("随机获得 +1 攻击或 +1 生命。");
 
         break;
       }
@@ -45,7 +77,7 @@ export function createCardRules(def, side) {
       }
     }
     rule.append(
-      el("span", "rule-tag", side === "enemy" ? "降临" : "入场"),
+      el("span", "rule-tag", "入场"),
       text,
     );
     rules.append(rule);

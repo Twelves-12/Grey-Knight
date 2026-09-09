@@ -57,8 +57,7 @@ export class BattleHud {
     }
     $("#energy-number", this.#stage).textContent = String(battle.energy);
     $("#energy-max", this.#stage).textContent = ` / ${ENERGY_MAX}`;
-    $("#player-sub", this.#stage).textContent =
-      `牌库 ${battle.drawCount} · 弃 ${battle.discardCount}`;
+    $("#player-sub", this.#stage).textContent = `牌库 ${battle.drawCount}`;
 
     const canAct = !blocked && battle.phase === "player";
     const canDeploy =
@@ -88,9 +87,16 @@ export class BattleHud {
     const encounter = battle.encounter;
     const { enemy, player } = this.#heroes;
     const nodeId = new URLSearchParams(location.search).get("node") ?? "node-1";
-    const nodeNumber = Number(nodeId.replace("node-", "")) || 1;
-    const nodeLabel = `节点${nodeNumber}`;
-    $("#battle-node-banner", this.#stage).textContent = `${nodeLabel} · ${nodeId === "node-1" ? "断桥前哨" : "深渊战线"}`;
+    const chapterLabels = {
+      "node-1": "第一章 · 东疆剿匪，心生疑云",
+      "node-2": "第二章 · 账簿露秘，祸起高堂（查账线）",
+      "node-3": "第三章 · 同袍无踪，荒冢无名（查账线）",
+      "node-4": "第四章 · 匪首落定，密诏昭然（查账线）",
+      "node-6": "第六章 · 真相大白（查账线）",
+      "rebel-2": "第二章 · 边境异动，蛮族南侵（叛徒线）",
+    };
+    $("#battle-node-banner", this.#stage).textContent =
+      chapterLabels[nodeId] ?? "章节战斗";
     enemy.seal.textContent = encounter.hero.glyph;
     $("#enemy-name", this.#stage).textContent =
       `${encounter.hero.name} ${encounter.hero.nameEn}`;

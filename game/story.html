@@ -14,15 +14,20 @@
       <site-header active="game"></site-header>
       <main class="site-scroll journey-page">
         <div class="journey-topline">
-          <span>序章 · 灰烬之路</span>
-          <a href="./event.html">跳过剧情 →</a>
+          <span>第一章 · 东疆剿匪</span>
+          <a href="./battle.html?node=node-1">跳过剧情 →</a>
         </div>
         <article class="story-layout">
           <div
             class="story-scene"
             role="img"
-            aria-label="长夜中的城门，一线圣焰照着通向断桥的路"
+            aria-label="公爵城堡议事厅，壁炉火光照亮高背椅与半面阴影"
           >
+            <img
+              class="story-image"
+              alt="议事厅剧情图片"
+              data-image-slot="chapter-1-council"
+            />
             <svg viewBox="0 0 600 700" fill="none" aria-hidden="true">
               <defs>
                 <radialGradient id="night-light">
@@ -94,40 +99,28 @@
                 stroke-width="9"
               />
             </svg>
-            <span class="scene-caption">北境边城 / 最后一盏灯</span>
+            <span class="scene-caption">公爵城堡 / 议事厅</span>
           </div>
           <div class="story-copy">
-            <p class="eyebrow">GREY KNIGHT · PROLOGUE</p>
+            <p class="eyebrow">GREY KNIGHT · CHAPTER I</p>
             <div id="story-passages" aria-live="polite">
               <section class="story-passage">
-                <h1 class="site-title" tabindex="-1">长夜将至</h1>
-                <p>北境已经七天没有日出。</p>
+                <h1 class="site-title" tabindex="-1">东疆剿匪，心生疑云</h1>
                 <p>
-                  城墙之外，最后一支巡逻队没有回来。守门人将一盏还亮着的灯递给你，灯芯里藏着最后的圣焰。
+                  雷纳德公爵坐在高背椅上，指尖轻轻敲击着扶手。壁炉的火光映在他半张脸上，另一半隐入阴影。
                 </p>
-                <blockquote>“别让它熄了。”</blockquote>
+                <blockquote>“东部村落又遭劫了。阿尔德里克，你随我十一年，可曾见我亏待过子民？”</blockquote>
               </section>
               <section class="story-passage" hidden>
-                <h1 class="site-title" tabindex="-1">守誓之人</h1>
+                <blockquote>“您待领地如父待子，人人皆知。”</blockquote>
+                <blockquote>“那就替我肃清山匪。一个不留，清剿干净。”</blockquote>
                 <p>
-                  你曾和许多人一同宣誓。如今，只有盔甲上的灰还记得他们的名字。
+                  “遵命。”他起身时，瞥见公爵书桌一角压着张旧羊皮纸，上面有墨迹未干的数字——像是粮价，又像税目。他没多想，转身离去。
                 </p>
-                <p>
-                  你没有答应一定回来，只将长剑重新系紧。只要圣焰还能照亮一寸路，就有人得向前走。
-                </p>
-                <blockquote>“天亮之前，我会守住这条路。”</blockquote>
-              </section>
-              <section class="story-passage" hidden>
-                <h1 class="site-title" tabindex="-1">桥下有声</h1>
-                <p>城门在身后合拢。浓雾里，断桥边传来金属刮过石面的声音。</p>
-                <p>
-                  一面盾下压着受伤的守卫，桥下遗落着巡逻队的军号。而更远处，深渊正等待你的选择。
-                </p>
-                <blockquote>第一场交锋之前，你还有一次决定的机会。</blockquote>
               </section>
             </div>
             <div class="story-controls">
-              <span id="story-progress">01 / 03</span>
+              <span id="story-progress">01 / 02</span>
               <button id="story-back" class="btn" type="button" disabled>
                 上一段
               </button>
@@ -137,10 +130,10 @@
               <a
                 id="story-enter"
                 class="btn primary"
-                href="./event.html"
+                href="./story2.html"
                 hidden
               >
-                前往断桥 →
+                继续行军 →
               </a>
             </div>
           </div>

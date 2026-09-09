@@ -63,8 +63,15 @@
   border: 1px solid #a7aa7f1a;
   pointer-events: none;
 }
-.story-scene svg {
+.story-image {
   display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 430px;
+  object-fit: cover;
+}
+.story-scene svg {
+  display: none;
   width: 100%;
   height: 100%;
   min-height: 430px;
@@ -89,10 +96,13 @@
 }
 .story-passage h1 {
   margin: 0 0 30px;
-  font-size: clamp(34px, 4.5vw, 58px);
+  font-size: clamp(20px, 3.2vw, 42px);
   letter-spacing: 0.12em;
   line-height: 1.3;
   outline: none;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 .story-passage p {
   max-width: 34em;
@@ -380,6 +390,69 @@
   margin-top: 24px;
 }
 
+.settlement-story {
+  max-width: 760px;
+  margin: 28px auto 22px;
+  color: var(--site-primary-text);
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 2;
+}
+
+.settlement-story blockquote {
+  margin: 20px 0;
+  padding-left: 18px;
+  border-left: 2px solid #a28a5577;
+  color: var(--site-accent);
+}
+
+.settlement-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 760px;
+  margin: 24px auto 0;
+}
+
+.settlement-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+  padding: 20px;
+  color: var(--site-title);
+  text-align: left;
+  cursor: pointer;
+}
+
+.settlement-choice:hover,
+.settlement-choice.selected {
+  border-color: var(--site-accent);
+  background: linear-gradient(140deg, #423b2466, #121b12);
+}
+
+.settlement-choice:disabled:not(.selected) {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.settlement-choice .choice-body {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+}
+
+.settlement-choice strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.settlement-choice small {
+  color: var(--site-accent);
+  font-size: 12px;
+}
+
 @media (max-width: 760px) {
   .story-layout {
     grid-template-columns: 1fr;
@@ -389,7 +462,7 @@
     min-height: 220px;
     height: 32vh;
   }
-  .story-scene svg {
+  .story-image {
     min-height: 0;
     width: 100%;
     height: 100%;
@@ -436,6 +509,9 @@
   }
   .map-board {
     height: 380px;
+  }
+  .settlement-choices {
+    grid-template-columns: 1fr;
   }
   .map-node {
     width: 90px;

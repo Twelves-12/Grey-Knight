@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grey Knight · 节点剧情</title>
+    <title>Grey Knight · 东疆剿匪</title>
     <link rel="stylesheet" href="/css/base.css" />
     <link rel="stylesheet" href="/css/theme.css" />
     <link rel="stylesheet" href="/css/site.css" />
@@ -14,11 +14,17 @@
       <site-header active="game"></site-header>
       <main class="site-scroll journey-page">
         <div class="journey-topline">
-          <a href="./map.html">← 返回大地图</a>
-          <span id="story-topline-label">节点剧情</span>
+          <a href="./story.html">← 返回上一幕</a>
+          <a id="story-skip" href="./battle.html?node=node-1">跳过剧情 →</a>
+          <span id="story-topline-label">第一章 · 匪寨外围</span>
         </div>
         <article class="story-layout">
-          <div class="story-scene" role="img" aria-label="节点剧情场景">
+          <div class="story-scene" role="img" aria-label="东部山区黑石岭，匪寨栅栏隐在尘土与枯草之间">
+            <img
+              class="story-image"
+              alt="黑石岭匪寨剧情图片"
+              data-image-slot="chapter-1-bandit-camp"
+            />
             <svg viewBox="0 0 600 700" fill="none" aria-hidden="true">
               <defs>
                 <radialGradient id="night-light">
@@ -46,16 +52,16 @@
               <path d="m319 588 10 42" stroke="#c4c1a7" stroke-width="2" />
               <path d="M111 700 129 555m-9 65-51-46m57 12 24-50M505 700l-20-163m9 77 55-49m-61 6-22-52" stroke="#090f0b" stroke-width="9"/>
             </svg>
-            <span class="scene-caption">节点章节 / 长夜再临</span>
+            <span class="scene-caption">东部山区 / 黑石岭</span>
           </div>
           <div class="story-copy">
-            <p class="eyebrow">GREY KNIGHT · NODE ENTRY</p>
+            <p class="eyebrow">GREY KNIGHT · CHAPTER I</p>
             <div id="story-passages" aria-live="polite"></div>
             <div class="story-controls">
               <span id="story-progress">01 / 03</span>
               <button id="story-back" class="btn" type="button" disabled>上一段</button>
               <button id="story-next" class="btn primary" type="button">继续 →</button>
-              <a id="story-enter" class="btn primary" href="#" hidden>前往抉择 →</a>
+              <a id="story-enter" class="btn primary" href="#" hidden>进入战斗 →</a>
             </div>
           </div>
         </article>

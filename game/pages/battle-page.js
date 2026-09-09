@@ -1,5 +1,6 @@
 // TODO: 整个文件都需要重构。目前只是一个纯战斗demo，之后要跟随不同关卡和剧情变更
 import { BattleView } from "../ui/battle-view.js";
+import { getProfile, setProfile } from "../kv.js";
 
 /**
  * @typedef {{
@@ -18,7 +19,21 @@ export class BattlePage {
   // 模型进入玩家回合时，动画可能还没播完，这个锁得单独留着。
   #busy = true;
   #view;
-  static progressKey = "grey-knight:progress:v2";
+
+  #nextNodeId() {
+    if (this.#nodeId === "node-1") {
+      return getProfile().branch === "traitor" ? "rebel-2" : "node-2";
+    }
+    return this.#nodeId === "node-4"
+      ? "node-6"
+      : this.#nodeId === "rebel-2"
+        ? "rebel-3"
+        : this.#nodeId === "rebel-3"
+          ? "rebel-4"
+          : this.#nodeId === "rebel-4"
+            ? "rebel-5"
+            : `node-${Math.min(Number(this.#nodeId.replace("node-", "")) + 1, 6)}`;
+  }
 
   /**
    * @param {HTMLElement} room
@@ -83,18 +98,18 @@ export class BattlePage {
   };
 
   #skipBattle = () => {
-    const progress = JSON.parse(localStorage.getItem(BattlePage.progressKey) ?? "{}");
+    const profile = getProfile();
+    const progress = profile.progress ?? {};
     const unlocked = new Set(progress.unlocked ?? ["node-1"]);
-    const currentIndex = Number(this.#nodeId.replace("node-", "")) || 1;
-    const nextNode = `node-${Math.min(currentIndex + 1, 5)}`;
+    const nextNode = this.#nextNodeId();
     unlocked.add(nextNode);
-    localStorage.setItem(
-      BattlePage.progressKey,
-      JSON.stringify({
+    setProfile({
+      ...profile,
+      progress: {
         current: nextNode,
         unlocked: [...unlocked],
-      }),
-    );
+      },
+    });
     location.href = `/game/settlement.html?node=${encodeURIComponent(this.#nodeId)}&skip=1`;
   };
 
@@ -148,20 +163,18 @@ export class BattlePage {
   }
 
   #handleVictoryTransition() {
-    const progress = JSON.parse(
-      localStorage.getItem(BattlePage.progressKey) ?? "{}",
-    );
+    const profile = getProfile();
+    const progress = profile.progress ?? {};
     const unlocked = new Set(progress.unlocked ?? ["node-1"]);
-    const currentIndex = Number(this.#nodeId.replace("node-", "")) || 1;
-    const nextNode = `node-${Math.min(currentIndex + 1, 5)}`;
+    const nextNode = this.#nextNodeId();
     unlocked.add(nextNode);
-    localStorage.setItem(
-      BattlePage.progressKey,
-      JSON.stringify({
+    setProfile({
+      ...profile,
+      progress: {
         current: nextNode,
         unlocked: [...unlocked],
-      }),
-    );
+      },
+    });
     location.href = `/game/settlement.html?node=${encodeURIComponent(this.#nodeId)}&result=victory`;
   }
 

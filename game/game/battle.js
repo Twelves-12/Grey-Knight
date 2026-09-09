@@ -130,10 +130,6 @@ export class Battle {
     return this.#piles.drawCount;
   }
 
-  get discardCount() {
-    return this.#piles.discardCount;
-  }
-
   advance() {
     while (true) {
       const event = this.#queue.shift();
@@ -144,9 +140,11 @@ export class Battle {
 
         return event;
       }
+
       if (this.#phase === "over" || this.#phase === "player") {
         return undefined;
       }
+
       if (this.#phase === "combat") {
         if (this.#combatCol < LANE_COUNT) {
           const col = this.#combatCol;
@@ -162,6 +160,7 @@ export class Battle {
 
         continue;
       }
+
       const action = this.#enemyActions.shift();
       if (action) {
         action.execute(this);
@@ -169,6 +168,7 @@ export class Battle {
 
         continue;
       }
+
       this.#round += 1;
       this.#energy = ENERGY_MAX;
       this.#queue.push({
@@ -359,7 +359,6 @@ export class Battle {
       this.#enemyUnitsSlain += 1;
     } else {
       this.#playerBoard[col] = undefined;
-      this.#piles.discard(unit.def);
     }
     died.push(side);
   }

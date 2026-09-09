@@ -6,7 +6,13 @@ export type EffectSpec =
   | { kind: "draw"; count: number }
   | { kind: "energy"; count: number }
   | { kind: "damageHero"; count: number }
-  | { kind: "healHero"; count: number };
+  | { kind: "damageHero"; count: number; faction?: string; multiplier?: number }
+  | { kind: "armor"; count: number }
+  | { kind: "healHero"; count: number }
+  | { kind: "buffAttackAllies"; count: number }
+  | { kind: "buffHealthAllies"; count: number }
+  | { kind: "summon"; count: number; cardId: string }
+  | { kind: "randomBuff"; count: number };
 
 export interface CardDef {
   attack: number;

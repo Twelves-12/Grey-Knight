@@ -1,27 +1,43 @@
-import { MAP_NODES, getMapNode } from "../game/content/map.js";
+import { MAP_NODES, MAP_ROUTES, getMapNode } from "../game/content/map.js";
+import { getProfile, setProfile } from "../game/kv.js";
 
-const PROGRESS_KEY = "grey-knight:progress:v2";
 const board = document.querySelector("#map-board");
 const continueBtn = document.querySelector("#map-continue");
 const backBtn = document.querySelector("#map-back");
 
-function getProgress() {
-  const raw = localStorage.getItem(PROGRESS_KEY);
-  if (!raw) {
-    return { current: "node-1", unlocked: ["node-1"] };
-  }
+function getNodeEntry(nodeId) {
+  return nodeId === "node-1"
+    ? "/game/story.html"
+    : `/game/story2.html?node=${encodeURIComponent(nodeId)}`;
+}
 
-  try {
-    const parsed = JSON.parse(raw);
-    const current = getMapNode(parsed.current ?? "node-1").id;
-    const currentIndex = MAP_NODES.findIndex((node) => node.id === current);
-    return {
-      current,
-      unlocked: MAP_NODES.slice(0, currentIndex + 1).map((node) => node.id),
-    };
-  } catch {
+function isSameBranch(nodeBranch, activeBranch) {
+  if (!nodeBranch || !activeBranch) {
+    return false;
+  }
+  return activeBranch === "audit"
+    ? nodeBranch === "audit" || nodeBranch.startsWith("audit-")
+    : nodeBranch === activeBranch;
+}
+
+function getProgress() {
+  const profile = getProfile();
+  if (!profile.progress) {
     return { current: "node-1", unlocked: ["node-1"] };
   }
+  const branch = profile.branch;
+  const unlocked = (profile.progress.unlocked ?? ["node-1"]).filter((nodeId) => {
+    const node = getMapNode(nodeId);
+    return !branch || isSameBranch(node.branch, branch) || node.id === "node-1";
+  });
+  const requestedCurrent = getMapNode(profile.progress.current ?? "node-1").id;
+  const current = unlocked.includes(requestedCurrent)
+    ? requestedCurrent
+    : unlocked.at(-1) ?? "node-1";
+  return {
+    current,
+    unlocked,
+  };
 }
 
 function renderMap() {
@@ -38,9 +54,9 @@ function renderMap() {
   routes.setAttribute("preserveAspectRatio", "none");
   routes.setAttribute("aria-hidden", "true");
 
-  for (let index = 0; index < MAP_NODES.length - 1; index += 1) {
-    const node = MAP_NODES[index];
-    const nextNode = MAP_NODES[index + 1];
+  for (const [fromId, toId] of MAP_ROUTES) {
+    const node = getMapNode(fromId);
+    const nextNode = getMapNode(toId);
     const route = document.createElementNS("http://www.w3.org/2000/svg", "line");
     route.classList.add("map-route");
     if (progress.unlocked.includes(nextNode.id)) {
@@ -55,12 +71,10 @@ function renderMap() {
 
   board.appendChild(routes);
 
-  const currentIndex = MAP_NODES.findIndex((node) => node.id === progress.current);
-
   for (const [index, node] of MAP_NODES.entries()) {
-    const isCurrent = index === currentIndex;
-    const isPassed = index < currentIndex;
-    const isUnlocked = isPassed || isCurrent;
+    const isCurrent = node.id === progress.current;
+    const isPassed = progress.unlocked.includes(node.id) && !isCurrent;
+    const isUnlocked = progress.unlocked.includes(node.id);
     const button = document.createElement("button");
     button.type = "button";
     button.className = `map-node ${isPassed ? "passed" : ""} ${isCurrent ? "current" : ""} ${!isUnlocked ? "locked" : ""}`.trim();
@@ -83,8 +97,9 @@ function renderMap() {
       if (!isUnlocked) {
         return;
       }
-      localStorage.setItem("grey-knight:map:current", node.id);
-      location.href = `/game/story2.html?node=${encodeURIComponent(node.id)}`;
+      const profile = getProfile();
+      setProfile({ ...profile, mapCurrent: node.id });
+      location.href = getNodeEntry(node.id);
     });
 
     board.appendChild(button);
@@ -106,7 +121,7 @@ continueBtn?.addEventListener("click", () => {
   if (!currentNode) {
     return;
   }
-  location.href = `/game/story2.html?node=${encodeURIComponent(currentNode.id)}`;
+  location.href = getNodeEntry(currentNode.id);
 });
 
 renderMap();

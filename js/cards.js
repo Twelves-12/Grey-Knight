@@ -1,22 +1,32 @@
 import {
   ABYSS_FRONT_ENEMIES,
+  PLAYER_CARDS,
   GREY_KNIGHT_STARTER_DECK,
 } from "../game/content/cards.js";
 import { applyCardSigil } from "../game/ui/card-icons.js";
 import { createCardRules } from "../game/ui/card-rules.js";
 import { el } from "../game/ui/utils.js";
+import { getProfile, setProfile } from "../game/kv.js";
 
 const form = document.querySelector("#card-filters");
 const grid = document.querySelector("#card-grid");
+const profile = getProfile();
+const discovered = new Set(profile.codex);
+for (const card of GREY_KNIGHT_STARTER_DECK) {
+  discovered.add(`player:${card.id}`);
+}
+if (discovered.size !== profile.codex.length) {
+  setProfile({ ...profile, codex: [...discovered] });
+}
 const entries = [
-  ...GREY_KNIGHT_STARTER_DECK.map((def) => ({ def, side: "player" })),
+  ...PLAYER_CARDS.map((def) => ({ def, side: "player" })),
   ...ABYSS_FRONT_ENEMIES.map((def) => ({ def, side: "enemy" })),
-].map(({ def, side }) => {
+].filter(({ def, side }) => discovered.has(`${side}:${def.id}`)).map(({ def, side }) => {
   const node = el("details", `codex-card ${side}`);
   const summary = el("summary");
   const top = el("div", "codex-card-top");
   top.append(
-    el("span", "", side === "player" ? "灰骑士" : "深渊"),
+    el("span", "", side === "player" ? "灰骑士" : "敌方"),
     el("span", "", `${def.cost} 圣力`),
   );
   const sigil = el("div", "codex-sigil");
@@ -28,7 +38,7 @@ const entries = [
   );
   const tags = [
     def.keyword === "firstStrike" ? "先手" : "",
-    def.onDeploy?.length ? (side === "player" ? "入场" : "降临") : "",
+    def.onDeploy?.length ? "入场" : "",
   ].filter(Boolean);
   summary.append(
     top,
