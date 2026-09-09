@@ -12,11 +12,13 @@ import { BattleView } from "../ui/battle-view.js";
 export class BattlePage {
   #nextSeed;
   #createBattle;
+  #nodeId;
   #ac = new AbortController();
   #battle;
   // 模型进入玩家回合时，动画可能还没播完，这个锁得单独留着。
   #busy = true;
   #view;
+  static progressKey = "grey-knight:progress:v2";
 
   /**
    * @param {HTMLElement} room
@@ -24,6 +26,7 @@ export class BattlePage {
    */
   constructor(room, options) {
     this.#createBattle = options.createBattle;
+    this.#nodeId = options.nodeId ?? "node-1";
     this.#nextSeed =
       options.seed ?? crypto.getRandomValues(new Uint32Array(1))[0];
     this.#battle = this.#nextBattle();
@@ -35,6 +38,7 @@ export class BattlePage {
         play: this.#tryPlay,
         endTurn: this.#requestEndTurn,
         restart: this.#restart,
+        skipBattle: this.#skipBattle,
       },
     });
     this.#view.startBattle(this.#battle);
@@ -63,6 +67,10 @@ export class BattlePage {
 
     this.#busy = false;
     this.#view.ready(this.#battle);
+
+    if (this.#battle.winner === "player") {
+      this.#finishBattleIfNeeded();
+    }
   }
 
   #requestEndTurn = () => {
@@ -72,6 +80,22 @@ export class BattlePage {
     this.#battle.endTurn();
     this.#busy = true;
     this.#runResolution();
+  };
+
+  #skipBattle = () => {
+    const progress = JSON.parse(localStorage.getItem(BattlePage.progressKey) ?? "{}");
+    const unlocked = new Set(progress.unlocked ?? ["node-1"]);
+    const currentIndex = Number(this.#nodeId.replace("node-", "")) || 1;
+    const nextNode = `node-${Math.min(currentIndex + 1, 5)}`;
+    unlocked.add(nextNode);
+    localStorage.setItem(
+      BattlePage.progressKey,
+      JSON.stringify({
+        current: nextNode,
+        unlocked: [...unlocked],
+      }),
+    );
+    location.href = `/game/settlement.html?node=${encodeURIComponent(this.#nodeId)}&skip=1`;
   };
 
   /**
@@ -116,6 +140,30 @@ export class BattlePage {
     this.#view.startBattle(this.#battle);
     this.#runResolution();
   };
+
+  #finishBattleIfNeeded() {
+    if (this.#battle.winner === "player") {
+      this.#handleVictoryTransition();
+    }
+  }
+
+  #handleVictoryTransition() {
+    const progress = JSON.parse(
+      localStorage.getItem(BattlePage.progressKey) ?? "{}",
+    );
+    const unlocked = new Set(progress.unlocked ?? ["node-1"]);
+    const currentIndex = Number(this.#nodeId.replace("node-", "")) || 1;
+    const nextNode = `node-${Math.min(currentIndex + 1, 5)}`;
+    unlocked.add(nextNode);
+    localStorage.setItem(
+      BattlePage.progressKey,
+      JSON.stringify({
+        current: nextNode,
+        unlocked: [...unlocked],
+      }),
+    );
+    location.href = `/game/settlement.html?node=${encodeURIComponent(this.#nodeId)}&result=victory`;
+  }
 
   #nextBattle() {
     const seed = this.#nextSeed;

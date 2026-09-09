@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grey Knight · 大地图</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/journey.css" />
+  </head>
+  <body hidden>
+    <div class="room site-room">
+      <site-header active="game"></site-header>
+      <main class="site-scroll journey-page">
+        <div class="journey-topline">
+          <a href="./story.html">← 灰烬之路</a>
+          <span>大地图 · 深渊前线</span>
+        </div>
+
+        <section class="map-panel sheet">
+          <header class="event-heading">
+            <span class="event-seal" aria-hidden="true">地</span>
+            <p class="eyebrow">WORLD MAP</p>
+            <h1 class="site-title">深渊前线</h1>
+            <p>
+              长夜还没熄灭，前路分岔在雾里。<br />
+              每一个节点都是一场命运的抉择。 
+            </p>
+          </header>
+
+          <div class="map-board" id="map-board" aria-label="大地图"></div>
+
+          <div class="map-actions">
+            <button id="map-back" class="btn ghost" type="button">返回</button>
+            <button id="map-continue" class="btn primary" type="button">
+              继续前进
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/game/entry.js"></script>
+  </body>
+</html>

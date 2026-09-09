@@ -87,6 +87,10 @@ export class BattleHud {
   startBattle(battle) {
     const encounter = battle.encounter;
     const { enemy, player } = this.#heroes;
+    const nodeId = new URLSearchParams(location.search).get("node") ?? "node-1";
+    const nodeNumber = Number(nodeId.replace("node-", "")) || 1;
+    const nodeLabel = `节点${nodeNumber}`;
+    $("#battle-node-banner", this.#stage).textContent = `${nodeLabel} · ${nodeId === "node-1" ? "断桥前哨" : "深渊战线"}`;
     enemy.seal.textContent = encounter.hero.glyph;
     $("#enemy-name", this.#stage).textContent =
       `${encounter.hero.name} ${encounter.hero.nameEn}`;

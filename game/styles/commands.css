@@ -229,6 +229,12 @@
   }
 }
 
+#skip-battle {
+  width: 100%;
+  margin-top: 2px;
+  border-color: rgba(162, 138, 85, 0.7);
+}
+
 .end-turn {
   position: relative;
   min-width: clamp(118px, 14vw, 158px);
@@ -439,6 +445,12 @@
     min-width: 0;
     height: 50px;
     font-size: 16px;
+  }
+
+  #skip-battle {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
   }
 
   .end-turn small {

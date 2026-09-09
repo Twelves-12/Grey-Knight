@@ -9,6 +9,7 @@ import { createCard } from "./card-view.js";
  *   play: (index: number, col: number, drag?: DraggedCard) => import("../types.js").PlayResult;
  *   endTurn: () => void;
  *   restart: () => void;
+ *   skipBattle: () => void;
  * }} BattleControls
  * @typedef {{
  *   card: HTMLElement;
@@ -93,10 +94,14 @@ export class BattleInput {
     });
     const endTurn = $("#end-turn", this.#stage);
     const mute = $("#mute-toggle", this.#stage);
+    const skip = $("#skip-battle", this.#stage);
     endTurn.addEventListener("click", () => {
       if (!this.#gesture) {
         this.#controls.endTurn();
       }
+    });
+    skip.addEventListener("click", () => {
+      this.#controls.skipBattle();
     });
     mute.addEventListener("click", this.#toggleMute);
   }

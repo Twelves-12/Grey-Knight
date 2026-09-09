@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grey Knight · 节点剧情</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/journey.css" />
+  </head>
+  <body hidden>
+    <div class="room site-room">
+      <site-header active="game"></site-header>
+      <main class="site-scroll journey-page">
+        <div class="journey-topline">
+          <a href="./map.html">← 返回大地图</a>
+          <span id="story-topline-label">节点剧情</span>
+        </div>
+        <article class="story-layout">
+          <div class="story-scene" role="img" aria-label="节点剧情场景">
+            <svg viewBox="0 0 600 700" fill="none" aria-hidden="true">
+              <defs>
+                <radialGradient id="night-light">
+                  <stop stop-color="#d6bb7855" />
+                  <stop offset="1" stop-color="#d6bb7800" />
+                </radialGradient>
+                <linearGradient id="gate-light" x2="0" y2="1">
+                  <stop stop-color="#b88f49" />
+                  <stop offset="1" stop-color="#b88f4900" />
+                </linearGradient>
+              </defs>
+              <circle cx="300" cy="245" r="235" fill="url(#night-light)" />
+              <circle cx="300" cy="163" r="49" stroke="#c9bc8255" />
+              <circle cx="300" cy="163" r="40" stroke="#c9bc8222" />
+              <path d="M0 440 100 383 187 434 250 395 370 427 470 350 600 432V700H0Z" fill="#151d17" />
+              <path d="M111 499V287L133 269V231H154V269L180 287V491M420 491V287L444 269V231H465V269L488 287V499" fill="#111813" stroke="#7b826044" stroke-width="2"/>
+              <path d="M166 497V313L212 295V254H233V282H269V247H292V282H328V247H349V284L401 308V497" fill="#141b15" stroke="#8e8c6244" stroke-width="2"/>
+              <path d="M237 502V391Q237 328 300 296Q363 328 363 391V502" stroke="#a18c5366" stroke-width="9"/>
+              <path d="M254 501V393Q254 349 300 323Q346 349 346 393V501Z" fill="#090e0a"/>
+              <path d="M291 493V351L300 335 309 351V493Z" fill="url(#gate-light)"/>
+              <path d="m291 493-95 207h208l-95-207" fill="url(#gate-light)" opacity=".19"/>
+              <path d="m0 593 133-24 112 8 114-22 241 35M0 638l171-25 106 13 159-24 164 29" stroke="#a4a08122"/>
+              <path d="M291 570q9-14 18 0l11 56-22-8-19 8Z" fill="#080c09" stroke="#b4a37355"/>
+              <circle cx="300" cy="561" r="8" fill="#090e0b" stroke="#b4a37366"/>
+              <path d="m319 588 10 42" stroke="#c4c1a7" stroke-width="2" />
+              <path d="M111 700 129 555m-9 65-51-46m57 12 24-50M505 700l-20-163m9 77 55-49m-61 6-22-52" stroke="#090f0b" stroke-width="9"/>
+            </svg>
+            <span class="scene-caption">节点章节 / 长夜再临</span>
+          </div>
+          <div class="story-copy">
+            <p class="eyebrow">GREY KNIGHT · NODE ENTRY</p>
+            <div id="story-passages" aria-live="polite"></div>
+            <div class="story-controls">
+              <span id="story-progress">01 / 03</span>
+              <button id="story-back" class="btn" type="button" disabled>上一段</button>
+              <button id="story-next" class="btn primary" type="button">继续 →</button>
+              <a id="story-enter" class="btn primary" href="#" hidden>前往抉择 →</a>
+            </div>
+          </div>
+        </article>
+      </main>
+    </div>
+    <script type="module" src="/game/entry.js"></script>
+  </body>
+</html>

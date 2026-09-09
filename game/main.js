@@ -9,7 +9,9 @@ import { BattlePage } from "./pages/battle-page.js";
 const room = document.querySelector('[data-room="battle"]');
 const params = new URLSearchParams(location.search);
 const seed = params.get("seed");
+const nodeId = params.get("node") ?? "node-1";
 const choice = ROAD_CHOICES.find((entry) => entry.id === params.get("choice"));
+
 const page = new BattlePage(room, {
   seed: seed === null ? undefined : Number(seed) >>> 0,
   audio: new GameAudio(),
@@ -24,6 +26,7 @@ const page = new BattlePage(room, {
 
     return new Battle(seed, player, new AbyssFront(seed));
   },
+  nodeId,
 });
 
 await page.enter();

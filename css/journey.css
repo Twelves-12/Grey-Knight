@@ -289,6 +289,97 @@
   font-size: 11px;
 }
 
+.map-panel {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 32px);
+}
+
+.map-board {
+  position: relative;
+  height: 500px;
+  margin-top: 30px;
+  border: 1px solid var(--site-border);
+  border-radius: var(--site-radius);
+  background:
+    radial-gradient(ellipse at 50% 30%, #4f563d1a, transparent 45%),
+    linear-gradient(180deg, #111914, #090d0c);
+  overflow: hidden;
+}
+
+.map-board::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px solid rgba(162, 138, 85, 0.18);
+  pointer-events: none;
+}
+
+.map-routes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.map-route {
+  stroke: rgba(162, 138, 85, 0.2);
+  stroke-width: 0.45;
+  stroke-dasharray: 1.5 1.5;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.2s, opacity 0.2s;
+}
+
+.map-route.active {
+  stroke: rgba(209, 188, 139, 0.72);
+  stroke-width: 0.7;
+  stroke-dasharray: none;
+}
+
+.map-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 54px;
+  border: 1px solid var(--site-border);
+  border-radius: 999px;
+  background: rgba(24, 31, 27, 0.9);
+  color: var(--site-title);
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.map-node.passed {
+  border-color: #829c78;
+  background: linear-gradient(180deg, #27382b, #17231b);
+  color: #c5d5bb;
+  box-shadow: inset 0 0 0 1px rgba(130, 156, 120, 0.3);
+}
+
+.map-node.current {
+  background: linear-gradient(180deg, #2f2b1e, #171915);
+  border-color: var(--site-accent);
+  color: var(--site-accent);
+  box-shadow: 0 0 18px rgba(209, 188, 139, 0.22), inset 0 0 0 1px rgba(209, 188, 139, 0.35);
+}
+
+.map-node.locked {
+  border-color: #49534c;
+  background: #111713;
+  color: #667067;
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.map-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
 @media (max-width: 760px) {
   .story-layout {
     grid-template-columns: 1fr;
@@ -342,6 +433,14 @@
   }
   .choice-consequence {
     clear: both;
+  }
+  .map-board {
+    height: 380px;
+  }
+  .map-node {
+    width: 90px;
+    height: 42px;
+    font-size: 12px;
   }
 }
 

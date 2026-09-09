@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grey Knight · 战斗结算</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/journey.css" />
+  </head>
+  <body hidden>
+    <div class="room site-room">
+      <site-header active="game"></site-header>
+      <main class="site-scroll journey-page">
+        <div class="journey-topline">
+          <a href="./map.html">← 返回大地图</a>
+          <span>结算 · 战斗结果</span>
+        </div>
+
+        <section class="map-panel sheet">
+          <header class="event-heading">
+            <span class="event-seal" aria-hidden="true">胜</span>
+            <p class="eyebrow">BATTLE SETTLEMENT</p>
+            <h1 id="settlement-title" class="site-title">战斗胜利</h1>
+            <p id="settlement-copy">
+              你已完成这一场战斗，下一段路正在等待你踏入。 
+            </p>
+          </header>
+
+          <div class="map-actions">
+            <button id="settlement-back" class="btn ghost" type="button">返回地图</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/game/entry.js"></script>
+  </body>
+</html>
