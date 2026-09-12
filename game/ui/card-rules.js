@@ -7,7 +7,11 @@ import { el } from "./utils.js";
  */
 export function createCardRules(def, side) {
   const rules = el("div", "card-rules");
-  rules.append(el("p", "card-inscription", def.text));
+  // 已保存的战斗快照可能仍包含旧占位正文。
+  const text = def.text.replace(/^无额外特质。/, "");
+  if (text) {
+    rules.append(el("p", "card-inscription", text));
+  }
   if (def.command && side === "player") {
     const command = el("p", "card-rule command-rule");
     command.append(
@@ -17,5 +21,5 @@ export function createCardRules(def, side) {
     rules.append(command);
   }
 
-  return rules;
+  return rules.hasChildNodes() ? rules : document.createDocumentFragment();
 }

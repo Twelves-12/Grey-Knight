@@ -24,7 +24,7 @@ if (getMapNode(nodeId) && !getMapNode(nodeId).story) {
     : node.label;
   document.querySelector("#story-eyebrow").textContent =
     node.subtitle ??
-    (node.kind === "elite" ? "精英遭遇 · 战具奖励" : "沿途遭遇 · 构筑你的队伍");
+    (node.kind === "elite" ? "精英遭遇 · 战具奖励" : "沿途遭遇");
   document.querySelector(".story-scene").prepend(sceneArt(node.kind));
   document.querySelector("#story-location").textContent =
     node.location ?? node.label;
@@ -44,10 +44,14 @@ if (getMapNode(nodeId) && !getMapNode(nodeId).story) {
   skip.href = destination;
   skip.textContent =
     node.kind === "peaceful"
-      ? "直接走进庙宇 →"
+      ? "走进庙宇 →"
       : node.kind === "duel"
-        ? "直接开始决斗 →"
-        : "直接前往战场 →";
+        ? "开始决斗 →"
+        : "前往战场 →";
+  skip.setAttribute(
+    "aria-label",
+    `跳过剧情，${skip.textContent.replace(" →", "")}`,
+  );
   enter.href = destination;
   enter.textContent =
     node.kind === "peaceful"
@@ -55,12 +59,6 @@ if (getMapNode(nodeId) && !getMapNode(nodeId).story) {
       : node.kind === "duel"
         ? "开始决斗 →"
         : `迎战${encounter.hero.name} →`;
-  document.querySelector("#story-destination").textContent =
-    node.kind === "peaceful"
-      ? "下一步：走进庙宇。你可以直接拒绝军令，也可以下令进攻。"
-      : node.kind === "duel"
-        ? "下一步：酒馆决斗。交锋结束后，再决定骑士的命运。"
-        : `下一步：${node.label}战场。胜利后处理战利品${node.choices?.length ? "与剧情抉择" : ""}。`;
   for (const [index, text] of node.story.entries()) {
     const section = document.createElement("section");
     section.className = "story-passage";
@@ -81,10 +79,10 @@ if (getMapNode(nodeId) && !getMapNode(nodeId).story) {
     back.disabled = current === 0;
     next.hidden = current === root.children.length - 1;
     enter.hidden = !next.hidden;
-    progress.textContent = `剧情 ${current + 1} / ${root.children.length}${next.hidden ? " · 已读至末段" : ""}`;
+    progress.textContent = `${current + 1} / ${root.children.length}`;
     meter.max = root.children.length;
     meter.value = current + 1;
-    next.textContent = `阅读第 ${current + 2} 段 →`;
+    next.textContent = "下一段 →";
     root.children[current].querySelector("h1").focus({ preventScroll: true });
   }
   back.addEventListener("click", () => {

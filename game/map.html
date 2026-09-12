@@ -15,13 +15,10 @@
       <main class="site-scroll journey-page">
         <div class="journey-topline">
           <a href="/">← 返回首页</a>
-          <span>每一次选择，都留在这条路上</span>
         </div>
         <section class="map-panel sheet">
           <header class="event-heading map-heading">
-            <p class="eyebrow">A KNIGHT'S JOURNEY</p>
             <h1 class="site-title">灰烬之路</h1>
-            <p id="map-copy">向东追寻真相，在岔路间决定队伍的成长。</p>
           </header>
           <div id="map-status" class="run-status"></div>
           <div id="map-equipment" class="journey-note"></div>
@@ -36,7 +33,7 @@
               <div>
                 <p id="map-current-step" class="eyebrow"></p>
                 <h2 id="map-current-title"></h2>
-                <p id="map-current-copy" class="journey-note"></p>
+                <p id="map-current-copy" class="journey-note" hidden></p>
               </div>
             </header>
             <div id="map-current-options" class="route-options"></div>
@@ -51,7 +48,7 @@
           </section>
           <details class="route-history">
             <summary>
-              查看完整路线
+              完整路线
               <span id="map-route-progress"></span>
             </summary>
             <div id="map-legend" class="map-legend"></div>
@@ -62,7 +59,7 @@
             ></div>
           </details>
           <details id="map-choice-history" class="route-history" hidden>
-            <summary>回看主线抉择</summary>
+            <summary>主线抉择</summary>
             <section
               id="map-choices"
               class="choice-history"

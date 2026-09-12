@@ -93,50 +93,33 @@ export class EnemyDeck {
     const intro = el(
       "p",
       "enemy-deck-intro",
-      `第 ${battle.round} 轮 · 本关共 ${deck.cards.length} 种敌方卡牌。这里展示基础属性；战场上的增益与伤势请查看对应单位。`,
+      `第 ${battle.round} 轮 · ${deck.cards.length} 种卡牌`,
     );
     const overview = el("div", "enemy-deck-overview");
     for (const [label, value, detail] of [
-      ["当前在场", `${onBoard.length} 个`, "已进入战线的敌方单位"],
+      ["当前在场", `${onBoard.length} 个`],
       [
         "待出单位",
         `${remaining} 张`,
         `本轮预告 ${planned.length} · 待命 ${deck.pending.length} · 未来波次 ${future.length}`,
       ],
-      [
-        "持续增援",
-        deck.recurring ? "有" : "无",
-        deck.recurring
-          ? `每 ${deck.recurring.interval} 轮加入待命`
-          : "有限牌库，不循环补充",
-      ],
+      ["持续增援", deck.recurring ? "有" : "无"],
     ]) {
       const stat = el("div", "enemy-deck-stat");
-      stat.append(
-        el("span", "", label),
-        el("strong", "", value),
-        el("small", "", detail),
-      );
+      stat.append(el("span", "", label), el("strong", "", value));
+      if (detail) {
+        stat.append(el("small", "", detail));
+      }
       overview.append(stat);
     }
     this.#body.replaceChildren(intro, overview);
     const mode = battle.encounter.mode;
     if (mode === "duel" || mode === "peaceful") {
       this.#body.append(
-        el(
-          "p",
-          "enemy-deck-notice",
-          `${mode === "duel" ? "本场决斗" : "本关庙宇"}只有开场单位，没有后续增援。`,
-        ),
+        el("p", "enemy-deck-notice", "仅有开场单位，没有后续增援。"),
       );
     } else if (!remaining && !deck.recurring) {
-      this.#body.append(
-        el(
-          "p",
-          "enemy-deck-notice",
-          "没有后续增援。有限牌库已用尽，场上剩余单位仍会继续战斗。",
-        ),
-      );
+      this.#body.append(el("p", "enemy-deck-notice", "没有后续增援。"));
     }
     this.#renderSchedule(deck);
     const section = el("section", "enemy-deck-library");
@@ -176,7 +159,7 @@ export class EnemyDeck {
       if (counts.recurring.has(def.id)) {
         status.append(el("span", "is-recurring", "循环增援"));
       } else if (!preview && !pending && !futureCount) {
-        status.append(el("span", "is-exhausted", "无剩余同名增援"));
+        status.append(el("span", "is-exhausted", "后续 0"));
       }
       card.append(
         createCardWatermark(def),
@@ -212,6 +195,13 @@ export class EnemyDeck {
     }
     const section = el("section", "enemy-deck-schedule");
     section.append(el("h3", "enemy-deck-section-title", "增援安排"));
+    section.append(
+      el(
+        "p",
+        "enemy-deck-footnote",
+        "增援在交锋后入场。满场时待命，有空位后再入场。",
+      ),
+    );
     if (deck.planned.length > 0) {
       const line = el("div", "enemy-deck-schedule-row");
       line.append(
@@ -229,17 +219,14 @@ export class EnemyDeck {
     if (deck.pending.length > 0) {
       const detail = el("details", "enemy-deck-details");
       detail.append(
-        el("summary", "", `待命 ${deck.pending.length} 张 · 等待空战线`),
+        el("summary", "", `待命 ${deck.pending.length} 张`),
         el("p", "", cardList(deck.pending)),
-        el("p", "enemy-deck-footnote", "下轮规划时若有空战线，将安排入场。"),
       );
       section.append(detail);
     }
     if (deck.waves.length > 0) {
       const detail = el("details", "enemy-deck-details");
-      detail.append(
-        el("summary", "", `未来 ${deck.waves.length} 批增援 · 查看轮次与牌种`),
-      );
+      detail.append(el("summary", "", `后续增援 · ${deck.waves.length} 批`));
       const list = el("ol", "enemy-deck-wave-list");
       for (const wave of deck.waves) {
         const row = el("li");
@@ -249,24 +236,17 @@ export class EnemyDeck {
         );
         list.append(row);
       }
-      detail.append(
-        list,
-        el(
-          "p",
-          "enemy-deck-footnote",
-          "各批增援计划在对应轮次交锋后入场。满场时留在待命，等待后续轮次规划空战线。",
-        ),
-      );
+      detail.append(list);
       section.append(detail);
     }
     if (deck.recurring) {
       const recurring = el("div", "enemy-deck-recurring");
       recurring.append(
-        el("strong", "", "持续增援 · 按以下顺序循环"),
+        el("strong", "", "持续增援 · 循环顺序"),
         el(
           "p",
           "",
-          `每 ${deck.recurring.interval} 轮补充 1 张，下一次在第 ${deck.recurring.nextRound} 轮加入待命；满场时等待空战线。`,
+          `每 ${deck.recurring.interval} 轮补充 1 张；下次第 ${deck.recurring.nextRound} 轮加入待命。`,
         ),
       );
       const list = el("ol", "enemy-deck-cycle");

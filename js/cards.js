@@ -65,7 +65,10 @@ const entries = [
       );
       body.append(flavor);
     }
-    node.append(createCardWatermark(def), heading, body);
+    node.append(createCardWatermark(def), heading);
+    if (body.hasChildNodes()) {
+      node.append(body);
+    }
     grid.append(node);
 
     return { def, side, node };
@@ -103,7 +106,7 @@ function filterCards() {
     }
   }
   document.querySelector("#card-count").textContent =
-    `${count} / ${entries.length} 张卡牌`;
+    `${count} / ${entries.length} 张已解锁卡牌`;
   document.querySelector("#card-empty").hidden = count !== 0;
 }
 

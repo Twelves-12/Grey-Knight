@@ -26,29 +26,26 @@ let selectedInstance;
 let failureMessage = "";
 const scenes = {
   shop: {
-    description:
-      "商人将旅途中搜集的卡牌与战具铺在车旁。钱袋有限，为下一场交锋挑选补给。",
+    description: "商人将卡牌与战具铺在车旁。",
     title: "交易与补给",
-    hint: "点击商品即可购买；可进行多笔交易，完成后继续前行。",
     seal: "市",
   },
   forge: {
-    description: "炉火照亮旧甲与残刃。选出一张牌，决定将它锻成怎样的力量。",
-    title: "选择卡牌，再选择升级",
-    hint: "每张牌只能升级一次；同名的其他牌不受影响，升级随本趟冒险保留。",
+    description: "炉火照亮旧甲与残刃。",
+    title: "锻造",
+    hint: "每张牌只能升级一次，效果保留至本趟冒险结束。",
     seal: "锻",
   },
   camp: {
-    description: "行军队伍在背风处燃起篝火。今夜的时间，只够休整或搜集一次。",
-    title: "如何度过这一夜？",
-    hint: "两项行动只能选择一项。点击整张行动卡，立即执行。",
+    description: "行军队伍在背风处燃起篝火。",
+    title: "休整与搜集",
+    hint: "本次停留限选一项。",
     seal: "营",
   },
   event: {
-    description:
-      "路旁躺着一只封存的军需遗匣。封口下藏着财物，也藏着致命的机关。",
-    title: "如何处置遗匣？",
-    hint: "两项行动只能选择一项。点击整张行动卡，立即执行。",
+    description: "军需遗匣的封口下藏着财物和机关。",
+    title: "军需遗匣",
+    hint: "本次停留限选一项。",
     seal: "匣",
   },
 };
@@ -82,7 +79,7 @@ const costReason = (run, cost) =>
 
 const effect = (label, value, tone = "neutral") => ({ label, value, tone });
 
-function serviceGroup(title, description) {
+function serviceGroup(title, description = "") {
   const group = el("section", "service-group");
   const grid = el("div", "service-grid");
   group.append(sectionHeading(title, description), grid);
@@ -118,10 +115,7 @@ function cardSelect(run, predicate) {
 }
 
 function renderShop(service, run) {
-  const cards = serviceGroup(
-    "购入卡牌",
-    "每件商品点击即买，加入本趟冒险牌组。",
-  );
+  const cards = serviceGroup("购入卡牌");
   for (const id of service.cards) {
     const def = PLAYER_CARDS.find((card) => card.id === id);
     const sold = service.bought.includes(id);
@@ -182,10 +176,7 @@ function renderShop(service, run) {
       onClick: () => act("heal"),
     }),
   );
-  const removal = serviceGroup(
-    "精简牌组",
-    "选定具体一张牌后移除；牌组至少保留 5 张。",
-  );
+  const removal = serviceGroup("精简牌组", "牌组至少保留 5 张。");
   const selection = el("div", "service-card-preview sheet");
   selection.append(cardSelect(run, () => true));
   const selected = run.deck.find(
@@ -216,9 +207,7 @@ function renderShop(service, run) {
 function renderForge(run) {
   const available = run.deck.filter((card) => !card.upgrade);
   if (available.length === 0) {
-    actions.append(
-      el("p", "journey-note", "所有卡牌均已升级。可以离开锻炉，继续前行。"),
-    );
+    actions.append(el("p", "journey-note", "所有卡牌均已升级。"));
 
     return;
   }
@@ -235,7 +224,6 @@ function renderForge(run) {
     el("p", "eyebrow", "当前卡牌"),
     el("h3", "", original.name),
     cardDetails(original),
-    el("p", "journey-note", "点击一个升级分支，支付 30 灰烬完成锻造。"),
   );
   comparison.append(current);
   for (const branch of ["unit", "command"]) {
@@ -255,7 +243,6 @@ function renderForge(run) {
     comparison.append(
       choiceCard({
         title: upgraded.name,
-        eyebrow: `升级分支 · ${upgraded.name.split("·").at(-1)}`,
         icon: "forge",
         description: change,
         content: cardDetails(upgraded),
@@ -263,7 +250,7 @@ function renderForge(run) {
           effect("支付", "30 灰烬", "cost"),
           effect("保留", "本趟冒险"),
         ],
-        action: "选择此分支 →",
+        action: "锻造 →",
         disabledReason: costReason(run, 30),
         onClick: () =>
           act("upgrade", { instanceId: selectedInstance, upgrade: branch }),
@@ -287,7 +274,7 @@ function renderOneTime(service, run) {
             id: "rest",
             title: "围火休整",
             icon: "camp",
-            description: "恢复 35% 最大圣焰。今夜不再外出搜集。",
+            description: "恢复 35% 最大圣焰。",
             effects: [
               effect("本次恢复", `${rest} 圣焰`, "gain"),
               effect("代价", "放弃搜集"),
@@ -298,7 +285,6 @@ function renderOneTime(service, run) {
             id: "scavenge",
             title: "搜集灰烬",
             icon: "ashes",
-            description: "带队寻找可用物资。今夜不再享有免费休整。",
             effects: [
               effect("获得", "20 灰烬", "gain"),
               effect("代价", "放弃休整"),
@@ -311,7 +297,6 @@ function renderOneTime(service, run) {
             id: "open",
             title: "开启军需遗匣",
             icon: "event",
-            description: "承受机关的伤害，取出匣中的财物。",
             effects: [
               effect("失去", "4 圣焰", "cost"),
               effect("获得", "40 灰烬", "gain"),
@@ -321,28 +306,25 @@ function renderOneTime(service, run) {
           },
           {
             id: "respect",
-            title: "整顿遗物，默立致意",
+            title: "整顿遗物",
             icon: "health",
-            description: "安顿亡者的遗物，让队伍重拾继续前行的意志。",
             effects: [
               effect("本次恢复", `${respect} 圣焰`, "gain"),
               effect("代价", "放弃匣中财物"),
             ],
-            action: "整理遗物，恢复圣焰 →",
+            action: "整理遗物 →",
           },
         ];
   for (const choice of choices) {
     const selected = service.used && service.lastAction?.action === choice.id;
     const completed = service.used
       ? selected
-        ? "此行动已完成"
-        : "本次停留已结束，不能再选另一项"
+        ? "已完成"
+        : "已选择另一项"
       : (choice.reason ?? "");
     actions.append(
       choiceCard({
         ...choice,
-        eyebrow: selected ? "已选择" : "本次停留二选一",
-        action: selected ? "已完成 ✓" : choice.action,
         disabledReason: completed,
         selected,
         onClick: () => act(choice.id),
@@ -355,7 +337,7 @@ function renderNotice(service) {
   const notice = document.querySelector("#event-notice");
   if (failureMessage) {
     resultNotice(notice, {
-      title: "暂时无法执行",
+      title: "无法执行",
       tone: "error",
       text: failureMessage,
       effects: [],
@@ -365,14 +347,8 @@ function renderNotice(service) {
   }
   const record = service.lastAction;
   if (!record) {
-    notice.hidden = !service.used;
-    if (service.used) {
-      resultNotice(notice, {
-        title: "本次行动已完成",
-        text: "这里的行动已结算，可以继续前行。",
-        effects: [],
-      });
-    }
+    notice.hidden = true;
+    notice.replaceChildren();
 
     return;
   }
@@ -381,46 +357,36 @@ function renderNotice(service) {
     rest: "休整完成",
     scavenge: "搜集完成",
     open: "遗匣已开启",
-    respect: "已向亡者致意",
+    respect: "遗物已整理",
     buy: `已购入「${def?.name}」`,
-    relic: "已购入战具",
+    relic: `已购入「${RELICS.find((entry) => entry.id === service.relicId)?.name}」`,
     heal: "治疗完成",
     remove: `已移除「${def?.name}」`,
-    upgrade: `「${def?.name}」升级完成`,
-  }[record.action];
-  const text = {
-    rest: "队伍结束休整。今晚的营地行动已用完。",
-    scavenge: "物资已入袋。今晚的营地行动已用完。",
-    open: "你承受了机关伤害，取出了军需遗匣中的财物。",
-    respect: "你整顿遗物后离开，没有取走匣中的财物。",
-    buy: "新卡牌已加入本趟牌组。",
-    relic: `${RELICS.find((entry) => entry.id === service.relicId)?.name}已装备，本趟冒险持续生效。`,
-    heal: "药草已经使用，实际恢复量如下。",
-    remove: "所选卡牌及其升级、成长已移出本趟牌组。",
     upgrade: def
-      ? `已选择「${applyCardUpgrade(def, record.options.upgrade).name}」。同名的其他牌不受影响。`
-      : "升级已应用。",
+      ? `已锻造「${applyCardUpgrade(def, record.options.upgrade).name}」`
+      : "升级完成",
   }[record.action];
-  const changes = [
-    effect(
-      "圣焰",
-      `${record.before.health} → ${record.after.health}`,
-      record.after.health > record.before.health
-        ? "gain"
-        : record.after.health < record.before.health
-          ? "cost"
-          : "neutral",
-    ),
-    effect(
-      "灰烬",
-      `${record.before.ashes} → ${record.after.ashes}`,
-      record.after.ashes > record.before.ashes
-        ? "gain"
-        : record.after.ashes < record.before.ashes
-          ? "cost"
-          : "neutral",
-    ),
-  ];
+  const changes = [];
+  if (record.before.health !== record.after.health) {
+    changes.push(
+      effect(
+        "圣焰",
+        `${record.before.health} → ${record.after.health}`,
+        record.after.health > record.before.health ? "gain" : "cost",
+      ),
+    );
+  } else if (["respect", "rest"].includes(record.action)) {
+    changes.push(effect("恢复", "0 圣焰（已满）"));
+  }
+  if (record.before.ashes !== record.after.ashes) {
+    changes.push(
+      effect(
+        "灰烬",
+        `${record.before.ashes} → ${record.after.ashes}`,
+        record.after.ashes > record.before.ashes ? "gain" : "cost",
+      ),
+    );
+  }
   if (record.before.deckCount !== record.after.deckCount) {
     changes.push(
       effect(
@@ -429,7 +395,7 @@ function renderNotice(service) {
       ),
     );
   }
-  resultNotice(notice, { title, text, effects: changes });
+  resultNotice(notice, { title, effects: changes });
 }
 
 function render() {
@@ -440,18 +406,10 @@ function render() {
   document.querySelector("#event-title").textContent = node.title;
   document.querySelector("#event-description").textContent = scene.description;
   document.querySelector("#event-seal").textContent = scene.seal;
-  document.querySelector(".event-heading .eyebrow").textContent = {
-    shop: "行商 · 旅途补给",
-    forge: "锻炉 · 卡牌升级",
-    camp: "营地 · 一次停留",
-    event: "旅途事件 · 军需遗匣",
-  }[node.kind];
-  document.querySelector("#event-action-title").textContent = service.used
-    ? "本次行动已完成"
-    : scene.title;
-  document.querySelector("#event-action-hint").textContent = service.used
-    ? "结果已记入冒险。点击下方按钮，返回地图继续前行。"
-    : scene.hint;
+  document.querySelector("#event-action-title").textContent = scene.title;
+  const hint = document.querySelector("#event-action-hint");
+  hint.textContent = service.used ? "" : (scene.hint ?? "");
+  hint.hidden = !hint.textContent;
   renderRunStatus(document.querySelector("#event-status"), run);
   renderNotice(service);
   actions.replaceChildren();
@@ -463,7 +421,7 @@ function render() {
     renderOneTime(service, run);
   }
   document.querySelector("#event-deck-summary").textContent =
-    `查看冒险牌组 · ${run.deck.length} 张`;
+    `冒险牌组 · ${run.deck.length} 张`;
   const list = document.querySelector("#event-deck-list");
   list.replaceChildren();
   for (const instance of run.deck) {
@@ -483,10 +441,10 @@ function render() {
   const oneTime = node.kind === "camp" || node.kind === "event";
   leave.classList.toggle("primary", service.used || !oneTime);
   leave.textContent = service.used
-    ? "行动完成，继续前行 →"
+    ? "继续前行 →"
     : oneTime
-      ? "不作选择，继续前行 →"
-      : "结束停留，继续前行 →";
+      ? "放弃本次机会，离开 →"
+      : "离开 →";
 }
 
 document

@@ -22,7 +22,7 @@ const card = (id, name, faction, cost, attack, health, icon, extra = {}) => ({
   type: "unit",
   command: { kind: "guard", count: 2, text: "一名友方单位获得 2 护甲。" },
   icon: CARD_ICONS[icon],
-  text: "无额外特质。",
+  text: "",
   ...extra,
 });
 

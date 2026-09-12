@@ -108,7 +108,7 @@ export class BattleHud {
     oath.textContent =
       battle.oath === "fate" ? "篡命誓约 · 交换意图" : "焚身誓约 · 生命换圣力";
     $("#battle-status", this.#stage).textContent =
-      `军令：${battle.commandUsed ? "本轮已用" : "可用"} · 移动：${battle.moved ? "本轮已用" : "可用"}\n${battle.ritualDamage ? `圣印仪式：每轮 ${battle.ritualDamage} 伤害\n` : ""}${battle.oath ? `誓约：${{ immolation: "焚身", dawn: "晨钟", fate: "篡命" }[battle.oath]}` : "击杀且存活：下一列本轮 +1 攻击"}`;
+      `移动：${battle.moved ? "本轮已用" : "可用"}\n${battle.ritualDamage ? `圣印仪式：每轮 ${battle.ritualDamage} 伤害\n` : ""}${battle.oath === "dawn" ? "晨钟誓约" : battle.oath ? "" : "击杀且存活：下一列本轮 +1 攻击"}`;
     const endTurn = $("#end-turn", this.#stage);
     endTurn.disabled = !canAct;
     endTurn.classList.toggle("attract", canAct && !canDeploy);
@@ -121,7 +121,7 @@ export class BattleHud {
           : battle.phase === "combat"
             ? "列位交锋"
             : "准备中";
-    $("small", endTurn).textContent = canAct ? "结算所有列位 · E" : "";
+    $("small", endTurn).textContent = canAct ? "E" : "";
     this.#stage.dataset.state =
       battle.phase === "over" ? "over" : canAct ? "play" : "busy";
   }

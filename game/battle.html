@@ -15,9 +15,7 @@
       <main id="stage">
         <div class="battle-atmosphere"></div>
         <div class="battlefield">
-          <div class="battle-node-banner sheet" id="battle-node-banner">
-            节点1 · 断桥前哨
-          </div>
+          <div class="battle-node-banner sheet" id="battle-node-banner"></div>
           <section id="enemy-hero" class="hero enemy">
             <div id="enemy-seal" class="seal"></div>
             <div class="plate-info">
@@ -192,7 +190,7 @@
               敌方牌库
               <span aria-hidden="true">↗</span>
             </span>
-            <small id="enemy-deck-summary">查看卡牌与增援安排</small>
+            <small id="enemy-deck-summary"></small>
           </button>
           <details class="encounter-brief">
             <summary>敌方战法</summary>
@@ -223,11 +221,15 @@
                 />
               </svg>
             </div>
-            <span>守誓者，长夜将至。</span>
           </div>
-          <button id="end-turn" class="end-turn" type="button">
+          <button
+            id="end-turn"
+            class="end-turn"
+            type="button"
+            aria-keyshortcuts="E"
+          >
             <span>结束回合</span>
-            <small>结算所有列位 · E</small>
+            <small>E</small>
           </button>
           <button id="skip-battle" class="btn ghost" type="button">
             返回冒险地图

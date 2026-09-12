@@ -125,9 +125,6 @@ export class CardTooltip {
     const tip = el("div", "tooltip-card");
     const meta = el("div", "tt-head");
     meta.append(el("div", "tt-name", def.name));
-    if (def.nameEn) {
-      meta.append(el("div", "tt-en", def.nameEn));
-    }
     meta.append(
       el(
         "div",
@@ -152,9 +149,6 @@ export class CardTooltip {
     }
     tip.append(createCardWatermark(def), meta);
     tip.append(createCardRules(def, side));
-    if (def.flavor) {
-      tip.append(el("div", "tt-flavor", `「${def.flavor}」`));
-    }
     this.#anchor = anchor;
     this.#element = tip;
     this.#root.append(tip);

@@ -140,13 +140,13 @@ export class BattleInput {
           .filter((intent) => Number.isInteger(intent.col))
           .map((intent) => ({ side: "enemy", col: intent.col }));
         if (new Set(targets.map((target) => target.col)).size < 2) {
-          this.#reject("当前没有两个可交换的敌方意图。");
+          this.#reject("需要两个可交换的敌方意图。");
 
           return;
         }
         this.#selectTargets(
           { index: -1, action: "oath", targets },
-          "选择要交换的第一个增援意图",
+          "选择第一个敌方意图 · Esc 取消",
         );
       } else {
         this.#act("oath");
@@ -180,10 +180,10 @@ export class BattleInput {
               : "军令 · 选择手牌"
         : "军令 · 结算中";
     order.title = battle.commandUsed
-      ? "本轮军令已使用，下一轮恢复。"
+      ? "本轮军令已用。"
       : card?.marks?.sealed
-        ? "这张牌已封令，不能发动军令。"
-        : "弃掉选中的单位牌，发动其军令；不消耗圣力，每轮共一次。";
+        ? "已封令，不能发动军令。"
+        : "每轮一次：弃掉所选单位牌发动军令，不消耗圣力。";
   }
 
   reset() {
@@ -416,9 +416,9 @@ export class BattleInput {
           if (pending.action === "oath" || pending.action === "swap") {
             if (pending.from === undefined) {
               pending.from = target.col;
-              this.#prompt("再选择另一条战线完成交换 · Esc 取消");
+              this.#prompt("选择另一条战线交换 · Esc 取消");
             } else if (pending.from === target.col) {
-              this.#prompt("请选择另一条高亮战线完成交换 · Esc 取消");
+              this.#prompt("选择另一条高亮战线 · Esc 取消");
               this.#deny(cell);
             } else {
               this.#act(pending.action === "swap" ? "order" : "oath", {
@@ -441,15 +441,15 @@ export class BattleInput {
           if (result.ok === false) {
             this.#reject(
               result.reason === "afford"
-                ? "圣力不足，无法部署这张牌。"
-                : "当前目标不可用，请重新选择手牌。",
+                ? "圣力不足，无法部署。"
+                : "目标不可用，请重新选牌。",
             );
           }
         }
       } else if (cell) {
         this.#audio.play("deny");
         this.#deny(cell);
-        this.#prompt("请选择高亮的有效目标 · Esc 取消");
+        this.#prompt("选择高亮目标 · Esc 取消");
       }
 
       return;
@@ -490,9 +490,7 @@ export class BattleInput {
             to >= LANE_COUNT ||
             Boolean(battle.playerBoard[to]);
         }
-        this.#prompt(
-          `${unit.def.name}：可支付 1 圣力移动至相邻空列，每轮一次。`,
-        );
+        this.#prompt("移动至相邻空列 · 1 圣力 · 每轮一次");
       }
     }
     this.#tooltip.update(
@@ -526,9 +524,7 @@ export class BattleInput {
       }
       this.#showPlayableCells();
       this.sync();
-      this.#prompt(
-        `${def.name}：点击己方战线部署或替换。军令：${def.command.text}`,
-      );
+      this.#prompt("选择己方战线部署或替换 · Esc 取消");
     }
   }
 
@@ -546,16 +542,14 @@ export class BattleInput {
         $(".energy-cluster", this.#stage),
       );
       this.#reject(
-        `${def.name}需要 ${battle.cardCost(def)} 圣力，当前只有 ${battle.energy} 点。`,
+        `圣力不足：需要 ${battle.cardCost(def)}，现有 ${battle.energy}。`,
       );
 
       return;
     }
     if (mode === "order" && (battle.commandUsed || def.marks?.sealed)) {
       this.#reject(
-        def.marks?.sealed
-          ? "这张牌被封令，当前不能发动军令。"
-          : "本轮军令已使用。",
+        def.marks?.sealed ? "已封令，不能发动军令。" : "本轮军令已用。",
       );
 
       return;
@@ -566,8 +560,8 @@ export class BattleInput {
       const container = $("#action-choices", this.#stage);
       this.#prompt(
         selection.kind === "foresee"
-          ? `${def.name}：按希望抽到的先后顺序依次选牌，第一张置于牌库顶 · Esc 取消`
-          : `${def.name}：选择要处理的一张牌 · Esc 取消`,
+          ? `${def.name}：按抽牌顺序选牌，首张置顶 · Esc 取消`
+          : `${def.name}：选择一张牌 · Esc 取消`,
       );
       container.replaceChildren();
       const ordering = [];
@@ -595,15 +589,15 @@ export class BattleInput {
     if (targets.length > 0) {
       const swap = mode === "order" && def.command?.kind === "swap";
       if (swap && targets.length < 2) {
-        this.#reject("交换军令需要两名已在场的己方单位。");
+        this.#reject("交换需要两名在场友军。");
 
         return;
       }
       this.#selectTargets(
         { index, action: swap ? "swap" : mode, targets },
         swap
-          ? `${def.name}：选择要交换的第一名己方单位 · Esc 取消`
-          : `${def.name}：选择高亮的战场目标 · Esc 取消`,
+          ? `${def.name}：选择第一名友军 · Esc 取消`
+          : `${def.name}：选择高亮目标 · Esc 取消`,
       );
 
       return;
@@ -641,13 +635,13 @@ export class BattleInput {
     const result = this.#controls.action(action, options);
     if (!result.ok) {
       const reasons = {
-        afford: "资源不足，无法支付本次行动。",
-        used: "本轮已使用这项行动。",
-        target: "当前没有可用目标，请调整场面或牌堆后重试。",
-        empty: "目前没有可操作的牌，请稍后重试。",
-        phase: "请等待当前行动结算。",
+        afford: "资源不足。",
+        used: "本轮已用。",
+        target: "没有有效目标。",
+        empty: "没有可用卡牌。",
+        phase: "行动结算中。",
       };
-      this.#reject(reasons[result.reason] ?? "当前无法执行这项行动。");
+      this.#reject(reasons[result.reason] ?? "当前无法执行。");
     }
 
     return result.ok;
@@ -683,7 +677,7 @@ export class BattleInput {
         this.#stage.classList.add("choosing-target");
         const prompt = $("#target-prompt", this.#stage);
         const friendly = targets[0].side === "player";
-        prompt.textContent = `${battle.hand[index].name}：选择一个${friendly ? "友方" : "敌方"}目标 · Esc 取消`;
+        prompt.textContent = `${battle.hand[index].name}：选择${friendly ? "友方" : "敌方"}目标 · Esc 取消`;
         prompt.hidden = false;
         for (const target of targets) {
           $(

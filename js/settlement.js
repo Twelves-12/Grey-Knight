@@ -38,13 +38,10 @@ function choiceFutureEffects(choice, run) {
     ].filter(Boolean);
     future =
       missing.length > 0
-        ? [
-            `缺少：${missing.join("、")}`,
-            "仍可选择反抗；完成战后选牌后进入「孤证难鸣」，无法进入宫殿",
-          ]
+        ? [`缺少：${missing.join("、")}`, "结局「孤证难鸣」；无法进入宫殿"]
         : [
-            "骑士证人、民众支持均已具备；完成战后选牌后，开放宫殿隐藏终战",
-            "还需击败公爵与私人卫队才能达成正义结局；终战失败将进入悲剧结局",
+            "证人与民众支持齐备，开启宫殿终战",
+            "击败公爵：正义结局；终战失败：悲剧结局",
           ];
   }
 
@@ -99,14 +96,14 @@ function storyRewardEffects(record, chosen) {
   const effects = [];
   if (cardId) {
     effects.push({
-      label: "剧情牌已加入",
+      label: "剧情牌",
       value: storyCardName(cardId, reward?.upgrade),
       tone: "gain",
     });
   }
   if (reward?.ashes > 0) {
     effects.push({
-      label: "剧情奖励已到账",
+      label: "剧情奖励",
       value: `+${reward.ashes} 灰烬`,
       tone: "gain",
     });
@@ -114,10 +111,7 @@ function storyRewardEffects(record, chosen) {
   if (reward && (reward.health > 0 || chosen?.bonus?.heal)) {
     effects.push({
       label: "实际治疗",
-      value:
-        reward.health > 0
-          ? `恢复 ${reward.health} 圣焰`
-          : "恢复 0 圣焰（本次未恢复）",
+      value: reward.health > 0 ? `恢复 ${reward.health} 圣焰` : "恢复 0 圣焰",
       tone: reward.health > 0 ? "gain" : "neutral",
     });
   }
@@ -146,6 +140,7 @@ function settlementSteps(record) {
 function renderContext(record, chosen, ending, run) {
   const story = document.querySelector("#settlement-story");
   story.replaceChildren();
+  story.hidden = Boolean(ending);
   if (ending) {
     return;
   }
@@ -154,7 +149,7 @@ function renderContext(record, chosen, ending, run) {
         nodeId === "node-6" &&
         chosen.id === "rebel" &&
         (run.choices.knight !== "spare" || run.choices.temple !== "protect")
-          ? "你选择反抗，但证人与民众的支持尚不齐备。完成战后选牌后，本趟旅程将以「孤证难鸣」结束。"
+          ? "你选择反抗，但缺少共同作证的人。这段旅程将以「孤证难鸣」结束。"
           : chosen.aftermath,
       ]
     : (node.aftermath ?? []);
@@ -183,16 +178,16 @@ function renderContext(record, chosen, ending, run) {
 
 function renderStory(choices, run, pending) {
   const actions = {
-    recruit: "接受投降，领取卡牌",
-    execute: nodeId === "node-4" ? "处决骑士，领取嘉奖" : "执行军令，领取赏金",
-    expel: "驱逐蛮族，领取军需",
-    mercy: "放行蛮族，领取卡牌",
-    continue: "领取卡牌并继续",
-    spare: "放走骑士，领取卡牌",
-    destroy: "摧毁庙宇，征用补给",
-    protect: "保护庙宇，领取卡牌",
-    loyal: "选择普通结局，继续结算",
-    rebel: "反抗领主，继续结算",
+    recruit: "接受投降",
+    execute: nodeId === "node-4" ? "处决骑士" : "处决匪首",
+    expel: "驱逐蛮族",
+    mercy: "放行蛮族",
+    continue: "收下战利品",
+    spare: "放走骑士",
+    destroy: "摧毁庙宇",
+    protect: "保护庙宇",
+    loyal: "效忠领主",
+    rebel: "反抗领主",
   };
   for (const choice of node.choices) {
     const disabledReason =
@@ -206,26 +201,14 @@ function renderStory(choices, run, pending) {
       choiceCard({
         title: choice.title,
         description: choice.description,
-        eyebrow: choice.rewardId ? "剧情选择 · 获得专属牌" : "剧情选择",
         icon: "choice",
         effects,
         action: `${actions[choice.id]} →`,
         disabledReason,
         onClick() {
-          const updated = settleChapter(nodeId, choice.id);
-          const record =
-            updated.pendingBattle?.nodeId === nodeId
-              ? updated.pendingBattle
-              : updated.records[nodeId];
-          receipt = {
-            title: `已选择：${choice.title}`,
-            text: "这项处置已记录在本趟冒险中。",
-            effects: [
-              ...storyRewardEffects(record, choice),
-              ...choiceFutureEffects(choice, updated),
-            ],
-          };
-          render();
+          settleChapter(nodeId, choice.id);
+          receipt = null;
+          render(true);
         },
       }),
     );
@@ -239,18 +222,13 @@ function renderRewards(rewards, run, pending) {
     options.append(
       choiceCard({
         title: card.name,
-        eyebrow: "战后奖励 · 免费选 1 张",
         icon: "cards",
         content: cardDetails(card),
-        action: `将「${card.name}」加入牌组 →`,
+        action: "加入牌组 →",
         onClick() {
           chooseBattleReward(id);
-          receipt = {
-            title: `「${card.name}」已加入牌组`,
-            text: `本趟牌组现有 ${getRun().deck.length} 张牌，下场战斗起可以抽到。`,
-            effects: [{ label: "本次花费", value: "0 灰烬", tone: "neutral" }],
-          };
-          render();
+          receipt = null;
+          render(true);
         },
       }),
     );
@@ -260,10 +238,9 @@ function renderRewards(rewards, run, pending) {
   alternatives.append(
     choiceCard({
       title: "换一组奖励",
-      description: "重新随机生成 3 张候选牌，随后仍可选择或跳过。",
       icon: "refresh",
       effects: [{ label: "花费", value: "10 灰烬", tone: "cost" }],
-      action: "支付 10 灰烬，重掷 →",
+      action: "重掷 →",
       disabledReason:
         run.ashes < 10
           ? `还差 ${10 - run.ashes} 灰烬；当前持有 ${run.ashes}。`
@@ -272,29 +249,20 @@ function renderRewards(rewards, run, pending) {
         rerollBattleReward();
         receipt = {
           title: "奖励候选已更换",
-          text: "从新的一组奖励中选 1 张，或跳过换取灰烬。",
-          effects: [
-            { label: "已花费", value: "10 灰烬", tone: "cost" },
-            { label: "剩余", value: `${getRun().ashes} 灰烬`, tone: "neutral" },
-          ],
+          effects: [{ label: "花费", value: "10 灰烬", tone: "cost" }],
         };
-        render();
+        render(true);
       },
     }),
     choiceCard({
-      title: "保持精简，领取灰烬",
-      description: "放弃本次战后奖励牌，牌组数量不变。",
+      title: "放弃选牌",
       icon: "ashes",
       effects: [{ label: "获得", value: "+12 灰烬", tone: "gain" }],
-      action: "跳过选牌，领取 12 灰烬 →",
+      action: "领取灰烬 →",
       onClick() {
         chooseBattleReward(null);
-        receipt = {
-          title: "已跳过选牌，获得 12 灰烬",
-          text: `牌组保持 ${getRun().deck.length} 张；当前持有 ${getRun().ashes} 灰烬。`,
-          effects: [{ label: "本次获得", value: "+12 灰烬", tone: "gain" }],
-        };
-        render();
+        receipt = null;
+        render(true);
       },
     }),
   );
@@ -308,30 +276,13 @@ function renderOaths(rewards, pending) {
     options.append(
       choiceCard({
         title: oath.name,
-        eyebrow: "本趟唯一誓约",
         icon: "oath",
         description: oath.text,
-        effects: [
-          {
-            label: "生效时间",
-            value: "下一场战斗起，持续至本趟冒险结束",
-            tone: "gain",
-          },
-          {
-            label: "选择限制",
-            value: "只能持有一个，选定后本趟不可更换",
-            tone: "risk",
-          },
-        ],
-        action: `立下「${oath.name}」→`,
+        action: "立下誓约 →",
         onClick() {
           chooseOath(id);
-          receipt = {
-            title: `已立下「${oath.name}」`,
-            text: oath.text,
-            effects: [{ label: "生效", value: "下一场战斗起", tone: "gain" }],
-          };
-          render();
+          receipt = null;
+          render(true);
         },
       }),
     );
@@ -343,7 +294,7 @@ function renderSummary(root, record, chosen, run) {
   const effects = [];
   if (record.ashesReward > 0) {
     effects.push({
-      label: "战斗报酬已入账",
+      label: "战斗报酬",
       value: `+${record.ashesReward} 灰烬`,
       tone: "gain",
     });
@@ -354,7 +305,7 @@ function renderSummary(root, record, chosen, run) {
   effects.push(...storyRewardEffects(record, chosen));
   if (record.rewardId) {
     effects.push({
-      label: "战后选牌已加入",
+      label: "战后选牌",
       value: cardById(record.rewardId).name,
       tone: "gain",
     });
@@ -375,10 +326,10 @@ function renderSummary(root, record, chosen, run) {
 
     return;
   }
-  resultNotice(root, { title: "已确认的选择与所得", effects });
+  resultNotice(root, { title: "本关所得", effects });
 }
 
-function render() {
+function render(focusStep = false) {
   const run = getRun();
   const pending =
     run.pendingBattle?.nodeId === nodeId ? run.pendingBattle : null;
@@ -405,8 +356,9 @@ function render() {
         : "战斗胜利");
   document.querySelector("#settlement-seal").textContent =
     ending?.seal ?? node.seal ?? "胜";
-  document.querySelector("#settlement-copy").textContent =
-    ending?.text ?? "按下方步骤领取补给，整理队伍后继续前行。";
+  const copy = document.querySelector("#settlement-copy");
+  copy.textContent = ending?.text ?? "";
+  copy.hidden = !ending;
   renderRunStatus(document.querySelector("#settlement-status"), run);
   renderContext(record, chosen, ending, run);
   const stage = pending
@@ -424,21 +376,10 @@ function render() {
     stepIndex,
   );
   const headings = {
-    story: [
-      "处置抉择",
-      "选择一项。立即获得与后续影响分别列出，确认后本趟不可更改。",
-    ],
-    reward: [
-      "战后选牌 · 三选一",
-      "免费选 1 张加入本趟牌组；也可花费灰烬重掷，或跳过领取 12 灰烬。",
-    ],
-    oath: ["立下本趟唯一誓约", "从 3 种誓约中选 1 种，下一场战斗开始生效。"],
-    continue: [
-      ending ? "旅程已结束" : "整备完成，可以继续",
-      ending
-        ? "结局与图鉴会保留。新旅程会重新开始牌组、路线与成长。"
-        : "返回地图，选择下一处目的地。",
-    ],
+    story: ["处置抉择", ""],
+    reward: ["战后选牌 · 三选一", ""],
+    oath: ["立誓 · 三选一", "本趟不可更换，下一场战斗起生效。"],
+    continue: [ending ? "旅程结束" : "整备完成", ""],
   };
   document
     .querySelector("#settlement-step-heading")
@@ -469,20 +410,20 @@ function render() {
     run,
   );
   const outcome = document.querySelector("#settlement-outcome");
-  outcome.textContent = pending
-    ? `还需完成「${headings[stage][0]}」后才能继续。每次选择会自动保存，刷新可继续本步骤。`
+  outcome.hidden = Boolean(pending);
+  outcome.textContent = outcome.hidden
+    ? ""
     : ending
-      ? "可以查看冒险地图，或开启一趟新的旅程。"
-      : `下一站：${run.progress.available.map((id) => getMapNode(id).label).join(" / ")}。`;
+      ? "新旅程将重置牌组、成长、灰烬与路线，保留图鉴和结局。"
+      : `下一站：${run.progress.available.map((id) => getMapNode(id).label).join(" / ")}`;
   back.disabled = Boolean(pending);
   back.textContent = pending
     ? `先完成${steps[stepIndex].label}`
     : ending
       ? "查看冒险地图"
-      : "返回地图，选择下一站 →";
-  back.setAttribute("aria-describedby", "settlement-outcome");
+      : "返回地图 →";
   restart.hidden = !ending;
-  if (receipt) {
+  if (focusStep) {
     const heading = document.querySelector("#settlement-step-heading");
     heading.focus({ preventScroll: true });
     heading.scrollIntoView({ block: "start", behavior: "instant" });

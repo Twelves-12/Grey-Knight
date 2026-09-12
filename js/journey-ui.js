@@ -225,16 +225,19 @@ export function cardDetails(def) {
     stat.append(element("small", "", label), element("b", "", String(value)));
     stats.append(stat);
   }
-  const rules = element("span", "card-rule-copy");
-  rules.append(
-    element(
-      "span",
-      "card-rule-label",
-      def.type === "unit" ? "单位特质" : "使用效果",
-    ),
-    element("span", "", def.text),
-  );
-  detail.append(stats, rules);
+  detail.append(stats);
+  if (def.text) {
+    const rules = element("span", "card-rule-copy");
+    rules.append(
+      element(
+        "span",
+        "card-rule-label",
+        def.type === "unit" ? "单位特质" : "使用效果",
+      ),
+      element("span", "", def.text),
+    );
+    detail.append(rules);
+  }
   if (def.command) {
     const command = element("span", "card-rule-copy");
     command.append(

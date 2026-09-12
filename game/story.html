@@ -16,7 +16,13 @@
         <div class="journey-topline">
           <a href="./map.html">← 冒险地图</a>
           <span id="story-topline-label"></span>
-          <a id="story-skip" href="./battle.html">直接前往遭遇 →</a>
+          <a
+            id="story-skip"
+            href="./battle.html"
+            aria-label="跳过剧情，前往战场"
+          >
+            前往战场 →
+          </a>
         </div>
         <article class="story-layout">
           <aside class="story-aside">
@@ -47,13 +53,12 @@
             </div>
             <div id="story-passages" aria-live="polite"></div>
             <div id="story-run-status" class="run-status"></div>
-            <p id="story-destination" class="story-destination"></p>
             <div class="story-controls">
               <button id="story-back" class="btn" type="button" disabled>
                 上一段
               </button>
               <button id="story-next" class="btn primary" type="button">
-                阅读下一段 →
+                下一段 →
               </button>
               <a
                 id="story-enter"

@@ -23,7 +23,6 @@ export const MAP_NODES = [
       {
         id: "recruit",
         title: "接受投降，收为僚臣",
-        description: "获得「归顺匪首」。他将帮助你瓦解后来聚集的盗匪。",
         effects: {
           immediate: ["「归顺匪首」加入本趟牌组"],
           future: ["第六关减少盗匪开场兵力与增援压力"],
@@ -34,8 +33,6 @@ export const MAP_NODES = [
       {
         id: "execute",
         title: "遵照军令，斩杀匪首",
-        description:
-          "公爵的赏金可以投入你现有的构筑；放弃招降牌与匪首的后续支援。",
         effects: {
           immediate: ["本次处置不获得剧情牌；仍可战后选牌"],
           future: ["第六关敌方英雄生命 +4，并增加盗匪与增援压力"],
@@ -71,8 +68,6 @@ export const MAP_NODES = [
       {
         id: "expel",
         title: "驱逐蛮族，封锁边境",
-        description:
-          "领取边境补给，恢复伤势并准备接下来的精英战；把压力留到第六关。",
         effects: {
           immediate: ["「蛮族俘虏」加入本趟牌组"],
           future: ["第六关敌方英雄生命 +4，蛮族加入援军"],
@@ -85,7 +80,6 @@ export const MAP_NODES = [
       {
         id: "mercy",
         title: "怜悯战团，允许离开",
-        description: "保留对方的善意，换取较轻的终局压力；不领取边境补给。",
         effects: {
           immediate: ["「蛮族俘虏」加入本趟牌组"],
           future: ["第六关没有合流蛮族，增援压力较低"],
@@ -119,10 +113,10 @@ export const MAP_NODES = [
       {
         id: "continue",
         title: "带上战利品，继续前行",
-        description: "获得「海怪之颅」，攻击可以同时伤害当前线路的单位与英雄。",
+        description: "「海怪之颅」的攻击同时伤害本路单位与英雄。",
         effects: {
           immediate: ["「海怪之颅」加入本趟牌组"],
-          future: ["接下来还可选择一张战后奖励牌，并立下唯一誓约"],
+          future: [],
         },
         rewardId: "sea-monster-skull",
         aftermath: "海怪之颅成为队伍的战旗。叛逃骑士就在前方的酒馆。",
@@ -153,8 +147,6 @@ export const MAP_NODES = [
       {
         id: "execute",
         title: "处决叛徒，恪守军令",
-        description:
-          "用预先强化的军令和嘉奖整备队伍；放弃骑士证人与隐藏宫殿路线。",
         effects: {
           immediate: [
             "「骑士誓言·令使」加入本趟牌组",
@@ -171,7 +163,6 @@ export const MAP_NODES = [
       {
         id: "spare",
         title: "秘密放走骑士",
-        description: "保留将来出庭的证人；奖励牌维持基础形态，不领取公爵嘉奖。",
         effects: {
           immediate: ["「骑士誓言」加入本趟牌组"],
           future: ["保留骑士证人；还需保护庙宇，并在第六关反抗领主"],
@@ -205,8 +196,6 @@ export const MAP_NODES = [
       {
         id: "destroy",
         title: "执行命令，摧毁庙宇",
-        description:
-          "征用庙仓的钱粮与伤药，为最后几场战斗补给；失去民众支持，并使敌军壮大。",
         effects: {
           immediate: ["不获得剧情牌；本节点也没有战后选牌"],
           future: [
@@ -222,7 +211,6 @@ export const MAP_NODES = [
       {
         id: "protect",
         title: "拒绝军令，保护庙宇",
-        description: "留下庙仓物资，换取接济牌和民众支持；为揭露真相保留后路。",
         effects: {
           immediate: ["「流民接济」加入本趟牌组"],
           future: [
@@ -260,13 +248,11 @@ export const MAP_NODES = [
       {
         id: "loyal",
         title: "继续效忠领主",
-        description:
-          "收起证据，安全结束本趟冒险；不再承担宫殿终战的败亡风险，也放弃正义结局。",
         effects: {
           immediate: ["「真相之证」加入本趟牌组"],
           future: [
-            "安全结束本趟冒险，进入普通结局「未竟的誓言」",
-            "不再挑战宫殿，放弃本趟的隐藏终战与正义结局",
+            "普通结局「未竟的誓言」，无需再战",
+            "放弃宫殿终战与正义结局",
           ],
         },
         rewardId: "truth-evidence",
@@ -276,8 +262,6 @@ export const MAP_NODES = [
       {
         id: "rebel",
         title: "反抗暴君，背弃旧誓",
-        description:
-          "此前同时放走骑士、保护庙宇，才能继续挑战宫殿、争取正义结局；终战失败会进入悲剧结局。",
         effects: {
           immediate: ["「真相之证」加入本趟牌组"],
           future: [
@@ -315,10 +299,9 @@ export const MAP_NODES = [
       {
         id: "continue",
         title: "立下守护人民的新誓言",
-        description: "获得「背弃誓约」，达成正义结局。",
         effects: {
           immediate: ["「背弃誓约」加入本趟牌组"],
-          future: ["完成战后选牌后，达成正义结局「新的守护者」"],
+          future: ["正义结局「新的守护者」"],
         },
         rewardId: "broken-oath",
         aftermath:
@@ -459,7 +442,7 @@ export const ENDINGS = {
   fallen: {
     title: "旅程结束 · 长夜未尽",
     seal: "烬",
-    text: "你的队伍在行军途中倒下，本趟冒险已经结束。已发现的卡牌会留在图鉴中，新的冒险将重新开始。",
+    text: "你的队伍倒在行军途中，未竟的誓言消散在灰烬里。",
   },
 };
 
