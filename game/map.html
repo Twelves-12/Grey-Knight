@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grey Knight · 大地图</title>
+    <title>Grey Knight · 冒险地图</title>
     <link rel="stylesheet" href="/css/base.css" />
     <link rel="stylesheet" href="/css/theme.css" />
     <link rel="stylesheet" href="/css/site.css" />
@@ -14,33 +14,73 @@
       <site-header active="game"></site-header>
       <main class="site-scroll journey-page">
         <div class="journey-topline">
-          <a href="./story.html">← 灰烬之路</a>
-          <span>剧情地图 · 东疆至北境</span>
+          <a href="/">← 返回首页</a>
+          <span>每一次选择，都留在这条路上</span>
         </div>
-
         <section class="map-panel sheet">
-          <header class="event-heading">
-            <span class="event-seal" aria-hidden="true">地</span>
-            <p class="eyebrow">WORLD MAP</p>
-            <h1 class="site-title">剧情地图</h1>
-            <p>
-              长夜还没熄灭，前路分岔在雾里。<br />
-              每一个节点都是一场命运的抉择。 
-            </p>
+          <header class="event-heading map-heading">
+            <p class="eyebrow">A KNIGHT'S JOURNEY</p>
+            <h1 class="site-title">灰烬之路</h1>
+            <p id="map-copy">向东追寻真相，在岔路间决定队伍的成长。</p>
           </header>
-
-          <div class="map-board" id="map-board" aria-label="大地图"></div>
-
-          <div class="map-actions">
-            <button id="map-back" class="btn ghost" type="button">返回</button>
-            <button id="map-continue" class="btn primary" type="button">
-              继续前进
+          <div id="map-status" class="run-status"></div>
+          <div id="map-equipment" class="journey-note"></div>
+          <section id="map-ending" class="ending-panel" hidden></section>
+          <section class="map-focus" aria-labelledby="map-current-title">
+            <header class="map-focus-heading">
+              <span
+                id="map-current-icon"
+                class="map-focus-icon"
+                aria-hidden="true"
+              ></span>
+              <div>
+                <p id="map-current-step" class="eyebrow"></p>
+                <h2 id="map-current-title"></h2>
+                <p id="map-current-copy" class="journey-note"></p>
+              </div>
+            </header>
+            <div id="map-current-options" class="route-options"></div>
+            <div class="map-actions map-primary-actions">
+              <button
+                id="map-continue"
+                class="btn primary"
+                type="button"
+                hidden
+              ></button>
+            </div>
+          </section>
+          <details class="route-history">
+            <summary>
+              查看完整路线
+              <span id="map-route-progress"></span>
+            </summary>
+            <div id="map-legend" class="map-legend"></div>
+            <div
+              id="map-board"
+              class="campaign-map"
+              aria-label="分支冒险地图"
+            ></div>
+          </details>
+          <details id="map-choice-history" class="route-history" hidden>
+            <summary>回看主线抉择</summary>
+            <section
+              id="map-choices"
+              class="choice-history"
+              aria-label="主线抉择记录"
+            ></section>
+          </details>
+          <details class="new-run-panel">
+            <summary>开启新旅程</summary>
+            <p class="journey-note">
+              当前旅程的牌组、成长、灰烬与路线将重置。图鉴与结局记录保留。
+            </p>
+            <button id="map-new" class="btn" type="button">
+              确认开启新旅程
             </button>
-          </div>
+          </details>
         </section>
       </main>
     </div>
-
     <script type="module" src="/game/entry.js"></script>
   </body>
 </html>

@@ -4,6 +4,18 @@ export class BattleHand {
   #element;
   #template;
 
+  /** @param {import("../types.js").CardDef} def @param {number} index @param {number} cost */
+  #create(def, index, cost) {
+    const card = createCard(this.#template, def, "player", {
+      inHand: true,
+      cost,
+    });
+    card.dataset.index = String(index);
+    card.dataset.state = JSON.stringify(def);
+
+    return card;
+  }
+
   /**
    * @param {HTMLElement} element
    * @param {HTMLTemplateElement} template
@@ -21,15 +33,11 @@ export class BattleHand {
     this.#element.scrollLeft = 0;
   }
 
-  /**
-   * @param {import("../types.js").CardDef} def
-   */
-  add(def) {
+  /** @param {import("../types.js").CardDef} def @param {number} cost */
+  draw(def, cost) {
     const positions = this.#measure();
-    const card = createCard(this.#template, def, "player", { inHand: true });
-    card.dataset.index = String(this.#element.children.length);
+    const card = this.#create(def, this.#element.children.length, cost);
     this.#element.append(card);
-    this.#element.scrollLeft = this.#element.scrollWidth;
     this.#reflow(positions);
 
     return card;
@@ -49,12 +57,28 @@ export class BattleHand {
     return origin;
   }
 
-  /** @param {import("../game/battle.js").Battle} battle */
-  sync(battle) {
+  /**
+   * @param {import("../game/battle.js").Battle} battle
+   * @param {import("../types.js").CardDef[]} [cards]
+   */
+  sync(battle, cards = battle.hand) {
+    if (
+      this.#element.children.length !== cards.length ||
+      cards.some(
+        (def, index) =>
+          this.#element.children[index].dataset.state !== JSON.stringify(def),
+      )
+    ) {
+      this.#element.replaceChildren(
+        ...cards.map((def, index) =>
+          this.#create(def, index, battle.cardCost(def)),
+        ),
+      );
+    }
     for (const [index, card] of [...this.#element.children].entries()) {
       card.classList.toggle(
         "disabled",
-        battle.hand[index].cost > battle.energy,
+        battle.cardCost(cards[index]) > battle.energy,
       );
     }
   }

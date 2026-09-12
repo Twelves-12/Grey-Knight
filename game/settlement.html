@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grey Knight · 战斗结算</title>
+    <title>Grey Knight · 战后抉择</title>
     <link rel="stylesheet" href="/css/base.css" />
     <link rel="stylesheet" href="/css/theme.css" />
     <link rel="stylesheet" href="/css/site.css" />
@@ -14,52 +14,63 @@
       <site-header active="game"></site-header>
       <main class="site-scroll journey-page">
         <div class="journey-topline">
-          <a href="./map.html">← 返回大地图</a>
-          <span>结算 · 战斗结果</span>
+          <a href="./map.html">← 冒险地图</a>
+          <span id="settlement-chapter"></span>
         </div>
-
-        <section class="map-panel sheet">
+        <section class="map-panel sheet settlement-panel">
           <header class="event-heading">
-            <span class="event-seal" aria-hidden="true">胜</span>
-            <p class="eyebrow">BATTLE SETTLEMENT</p>
-            <h1 id="settlement-title" class="site-title">战斗胜利</h1>
-            <p id="settlement-copy">
-              你已完成这一场战斗，下一段路正在等待你踏入。 
-            </p>
+            <span id="settlement-seal" class="event-seal" aria-hidden="true">
+              誓
+            </span>
+            <p class="eyebrow">THE ROAD REMEMBERS</p>
+            <h1 id="settlement-title" class="site-title"></h1>
+            <p id="settlement-copy"></p>
           </header>
-
-          <section id="settlement-story" class="settlement-story">
-            <p>硝烟未散。阿尔德里克的剑尖抵在小头目喉前，四周俘虏早已弃械跪地。</p>
-            <blockquote>“杀吧。反正活着也是饿死。”</blockquote>
-            <blockquote>“劫粮时倒有胆量，如今充什么可怜？”</blockquote>
-            <blockquote>小头目惨笑：“大人，春上税吏进村，把存粮一车车拉空。有人从城堡送来银钱，雇我们劫公爵的空仓——闹得越大越好，闹完才有活路。我们拿命换口粥，这算匪吗？”</blockquote>
-            <p>阿尔德里克剑尖微滞。他想起公爵那句“一个不留”，又想起书桌上记着粮价的羊皮纸。</p>
-          </section>
-
-          <section id="settlement-choices" class="settlement-choices" aria-label="战后选择">
-            <button class="settlement-choice sheet" type="button" data-reward="castle-arbalist">
-              <span class="choice-number">01</span>
-              <span class="choice-body">
-                <strong>押回城堡，听候公爵发落</strong>
-                <small>获得卡牌：城堡弩手</small>
-              </span>
-            </button>
-            <button class="settlement-choice sheet" type="button" data-reward="kol-first-bandit">
-              <span class="choice-number">02</span>
-              <span class="choice-body">
-                <strong>收编此人，令其戴罪立功</strong>
-                <small>获得卡牌：前匪首·科尔</small>
-              </span>
-            </button>
-          </section>
-
+          <div
+            id="settlement-status"
+            class="run-status"
+            aria-live="polite"
+          ></div>
+          <ol id="settlement-steps" aria-label="结算步骤"></ol>
+          <section
+            id="settlement-story"
+            class="settlement-context"
+            aria-label="战后经过"
+          ></section>
+          <div id="settlement-step-heading" tabindex="-1"></div>
+          <div id="settlement-receipt" hidden aria-live="polite"></div>
+          <section
+            id="settlement-choices"
+            class="settlement-choices"
+            aria-label="战后选择"
+          ></section>
+          <section
+            id="settlement-rewards"
+            class="reward-section"
+            aria-live="polite"
+          ></section>
+          <div id="settlement-summary" hidden></div>
+          <p
+            id="settlement-outcome"
+            class="settlement-next-note"
+            aria-live="polite"
+          ></p>
           <div class="map-actions">
-            <button id="settlement-back" class="btn primary" type="button" disabled>返回地图</button>
+            <button id="settlement-new" class="btn" type="button" hidden>
+              开启新旅程
+            </button>
+            <button
+              id="settlement-back"
+              class="btn primary"
+              type="button"
+              disabled
+            >
+              完成选择后继续
+            </button>
           </div>
         </section>
       </main>
     </div>
-
     <script type="module" src="/game/entry.js"></script>
   </body>
 </html>

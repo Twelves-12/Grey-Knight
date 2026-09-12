@@ -4,9 +4,15 @@
  * @param {import("../types.js").Unit} player
  * @param {import("../types.js").Unit} enemy
  */
-export function resolveDuel(player, enemy) {
-  const playerHasFirstStrike = player.def.keyword === "firstStrike";
-  const enemyHasFirstStrike = enemy.def.keyword === "firstStrike";
+export function resolveDuel(
+  player,
+  enemy,
+  { playerAttack, enemyAttack, playerCanAttack, enemyCanAttack, absorb },
+) {
+  const playerHasFirstStrike =
+    player.def.keyword === "firstStrike" || player.temporaryFirstStrike;
+  const enemyHasFirstStrike =
+    enemy.def.keyword === "firstStrike" || enemy.temporaryFirstStrike;
   // 无人或双方均有先手时，玩家优先
   const playerStrikesFirst = playerHasFirstStrike || !enemyHasFirstStrike;
   const first = playerStrikesFirst ? player : enemy;
@@ -14,12 +20,25 @@ export function resolveDuel(player, enemy) {
   const firstSide = playerStrikesFirst ? "player" : "enemy";
   const secondSide = playerStrikesFirst ? "enemy" : "player";
 
-  const hits = [strike(first, second, firstSide)];
+  const firstCanAttack = playerStrikesFirst ? playerCanAttack : enemyCanAttack;
+  const secondCanAttack = playerStrikesFirst ? enemyCanAttack : playerCanAttack;
+  const firstAttack = playerStrikesFirst ? playerAttack : enemyAttack;
+  const secondAttack = playerStrikesFirst ? enemyAttack : playerAttack;
+  const hits =
+    firstCanAttack && firstAttack > 0
+      ? [strike(second, firstSide, absorb(second, firstAttack, secondSide))]
+      : [];
 
   // 只有一边有先手时，才提前结算是否死亡，否则正常进行
   const exclusiveFirstStrike = playerHasFirstStrike !== enemyHasFirstStrike;
-  if (!exclusiveFirstStrike || second.hp > 0) {
-    hits.push(strike(second, first, secondSide));
+  if (
+    secondCanAttack &&
+    secondAttack > 0 &&
+    (!exclusiveFirstStrike || second.hp > 0)
+  ) {
+    hits.push(
+      strike(first, secondSide, absorb(first, secondAttack, firstSide)),
+    );
   }
 
   return {
@@ -35,8 +54,7 @@ export function resolveDuel(player, enemy) {
  * @param {import("../types.js").Side} side
  * @returns {import("../types.js").Hit}
  */
-function strike(attacker, defender, side) {
-  const amount = attacker.def.attack;
+function strike(defender, side, amount) {
   defender.hp -= amount;
 
   return { amount, lethal: defender.hp <= 0, side, targetHp: defender.hp };

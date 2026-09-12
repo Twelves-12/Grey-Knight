@@ -1,163 +1,501 @@
-import { getMapNode } from "../game/content/map.js";
-import { PLAYER_CARDS } from "../game/content/cards.js";
-import { getProfile, setProfile } from "../game/kv.js";
+import { PLAYER_CARDS, applyCardUpgrade } from "../game/content/cards.js";
+import { OATHS, RELICS } from "../game/content/equipment.js";
+import { ENDINGS, getMapNode } from "../game/content/map.js";
+import {
+  chooseBattleReward,
+  chooseOath,
+  getNodeEntry,
+  getRun,
+  requireCampaignNode,
+  rerollBattleReward,
+  settleChapter,
+  startNewCampaign,
+} from "../game/session.js";
+import {
+  cardDetails,
+  choiceCard,
+  element,
+  renderRunStatus,
+  renderSteps,
+  resultNotice,
+  sectionHeading,
+} from "./journey-ui.js";
 
-const params = new URLSearchParams(location.search);
-const nodeId = params.get("node") ?? "node-1";
-const result = params.get("result") ?? "victory";
-const skipped = params.get("skip") === "1";
-
-const title = document.querySelector("#settlement-title");
-const copy = document.querySelector("#settlement-copy");
-const backBtn = document.querySelector("#settlement-back");
-const choiceButtons = [...document.querySelectorAll(".settlement-choice")];
-
+const nodeId =
+  new URLSearchParams(location.search).get("node") ?? getRun().progress.current;
 const node = getMapNode(nodeId);
-const currentIndex = Number(nodeId.replace("node-", "")) || 1;
-const chapterEnemyCards = {
-  "node-1": ["bandit-grunt", "bandit-deputy"],
-  "node-2": ["duke-private", "private-captain"],
-  "node-3": ["guard", "northern-commander"],
-  "node-4": ["guard-escort", "old-butler"],
-  "node-6": ["bandit-grunt", "old-butler"],
-  "rebel-2": ["barbarian-bear", "barbarian-warrior"],
-};
+const back = document.querySelector("#settlement-back");
+const restart = document.querySelector("#settlement-new");
+let receipt = null;
+const cardById = (id) => PLAYER_CARDS.find((card) => card.id === id);
 
-if (nodeId === "node-2") {
-  document.querySelector("#settlement-story").innerHTML =
-    `<p>阿尔德里克击退私兵，肋下挨了一记钝击，盔甲凹了一块。他一手按住伤处，一手将账册揣入怀中。</p><p>巷口转角处，那名商人早已不见踪影，只留一串急促向外的脚印。更远处，城门方向传来马嘶与喝令——私兵在封锁出口。</p><blockquote>“买劫自扰，再亲自平乱……十一年，我竟像个瞎子。”</blockquote><p>副官赶来，脸色紧张：“城里都在传您窝藏匪徒、私通外敌。公爵府已在调兵封城。咱们得走了。”</p>`;
-  choiceButtons[0].dataset.reward = "ledger-guard";
-  choiceButtons[0].querySelector("strong").textContent = "护住账册，强行突围";
-  choiceButtons[0].querySelector("small").textContent = "获得卡牌：账册护卫";
-  choiceButtons[1].dataset.reward = "light-scout";
-  choiceButtons[1].querySelector("strong").textContent = "放弃账册，保全自身";
-  choiceButtons[1].querySelector("small").textContent = "获得卡牌：轻装斥候";
+function choiceFutureEffects(choice, run) {
+  let future = choice.effects.future;
+  if (nodeId === "node-6" && choice.id === "rebel") {
+    const missing = [
+      run.choices.knight === "spare" ? null : "骑士证人（酒馆未放走骑士）",
+      run.choices.temple === "protect" ? null : "民众支持（未保护庙宇）",
+    ].filter(Boolean);
+    future =
+      missing.length > 0
+        ? [
+            `缺少：${missing.join("、")}`,
+            "仍可选择反抗；完成战后选牌后进入「孤证难鸣」，无法进入宫殿",
+          ]
+        : [
+            "骑士证人、民众支持均已具备；完成战后选牌后，开放宫殿隐藏终战",
+            "还需击败公爵与私人卫队才能达成正义结局；终战失败将进入悲剧结局",
+          ];
+  }
+
+  return future.map((value) => ({
+    label: "后续影响",
+    value,
+    tone:
+      ["destroy", "execute", "expel"].includes(choice.id) ||
+      (nodeId === "node-6" && choice.id === "rebel")
+        ? "risk"
+        : "neutral",
+  }));
 }
 
-if (nodeId === "rebel-2") {
-  document.querySelector("#settlement-story").innerHTML =
-    `<p>阿尔德里克击退蛮族，村中余火未熄。战熊的尸体横卧街心，蛮族残部跪地请降。</p><p>小头目科尔上前，低声说这些蛮族战士若收为己用，将来必有大用。此时斥候来报：叛徒骑士已至滨海领，再追三日可及。但边境蛮族蠢蠢欲动，若放任不管恐成大患。</p>`;
-  choiceButtons[0].dataset.reward = "barbarian-axe-thrower";
-  choiceButtons[0].querySelector("strong").textContent = "降服蛮族战团，询问详情，带其随行";
-  choiceButtons[0].querySelector("small").textContent = "获得卡牌：蛮族投斧手，解锁第五章民间结社支线";
-  choiceButtons[1].dataset.reward = "border-cavalry";
-  choiceButtons[1].querySelector("strong").textContent = "驱散即可，继续追杀任务";
-  choiceButtons[1].querySelector("small").textContent = "获得卡牌：边境骑兵";
+function storyCardName(id, upgrade) {
+  const card = cardById(id);
+
+  return upgrade ? applyCardUpgrade(card, upgrade).name : card.name;
 }
 
-if (nodeId === "node-1") {
-  choiceButtons[0].dataset.reward = "castle-arbalist";
-  choiceButtons[0].dataset.branch = "audit";
-  choiceButtons[0].querySelector("strong").textContent = "押回城堡，听候公爵发落";
-  choiceButtons[0].querySelector("small").textContent = "获得卡牌：城堡弩手，进入查账线";
-  choiceButtons[1].dataset.reward = "kol-first-bandit";
-  choiceButtons[1].dataset.branch = "traitor";
-  choiceButtons[1].querySelector("strong").textContent = "收编此人，令其戴罪立功";
-  choiceButtons[1].querySelector("small").textContent = "获得卡牌：前匪首·科尔，进入叛徒线";
+function choiceEffects(choice, run) {
+  const effects = choice.effects.immediate.map((value) => ({
+    label: choice.rewardId ? "立即获得" : "当下结果",
+    value,
+    tone: choice.rewardId ? "gain" : "neutral",
+  }));
+  if (choice.bonus?.ashes) {
+    effects.push({
+      label: "立即到账",
+      value: `+${choice.bonus.ashes} 灰烬`,
+      tone: "gain",
+    });
+  }
+  if (choice.bonus?.heal) {
+    const health = Math.min(choice.bonus.heal, run.maxHealth - run.health);
+    effects.push({
+      label: "本次治疗",
+      value:
+        health > 0
+          ? `恢复 ${health} 圣焰（最多 ${choice.bonus.heal}）`
+          : "圣焰已满，本次恢复 0",
+      tone: health > 0 ? "gain" : "neutral",
+    });
+  }
+
+  return [...effects, ...choiceFutureEffects(choice, run)];
 }
 
-if (nodeId === "node-3") {
-  document.querySelector("#settlement-story").innerHTML =
-    `<p>阿尔德里克跪在坟前，将那枚纹章握在掌心。无需再查，他已明白一切——当年追查账目的佩特里，早已被灭口埋于此地。</p>`;
-  choiceButtons[0].dataset.reward = "knights-legacy";
-  choiceButtons[0].querySelector("strong").textContent = "挖掘坟墓，确认身份";
-  choiceButtons[0].querySelector("small").textContent = "获得卡牌：骑士遗志";
-  choiceButtons[1].dataset.reward = "northern-scout";
-  choiceButtons[1].querySelector("strong").textContent = "默立凭吊，记下位置";
-  choiceButtons[1].querySelector("small").textContent = "获得卡牌：北境斥候";
+function storyRewardEffects(record, chosen) {
+  const reward = record.storyReward;
+  const cardId = reward ? reward.cardId : chosen?.rewardId;
+  const effects = [];
+  if (cardId) {
+    effects.push({
+      label: "剧情牌已加入",
+      value: storyCardName(cardId, reward?.upgrade),
+      tone: "gain",
+    });
+  }
+  if (reward?.ashes > 0) {
+    effects.push({
+      label: "剧情奖励已到账",
+      value: `+${reward.ashes} 灰烬`,
+      tone: "gain",
+    });
+  }
+  if (reward && (reward.health > 0 || chosen?.bonus?.heal)) {
+    effects.push({
+      label: "实际治疗",
+      value:
+        reward.health > 0
+          ? `恢复 ${reward.health} 圣焰`
+          : "恢复 0 圣焰（本次未恢复）",
+      tone: reward.health > 0 ? "gain" : "neutral",
+    });
+  }
+
+  return effects;
 }
 
-if (nodeId === "node-4") {
-  document.querySelector("#settlement-story").innerHTML =
-    `<p>阿尔德里克破门而入时，老管家仍坐在桌边，铁匣已空。他掌心摊着一封展开的信，冲阿尔德里克微微一笑，将信推过桌面。</p><blockquote>“不用搜了。你要的东西，就在这里。”</blockquote><p>信上字迹阿尔德里克一眼便认出——雷纳德公爵亲笔。授意雇匪、制造祸乱、借平乱之名私建军队、侵占边境土地，字字清晰。落款日期、火漆、印鉴俱全。</p>`;
-  choiceButtons[0].dataset.reward = "secret-letter";
-  choiceButtons[0].querySelector("strong").textContent = "仔细阅读密信，牢记每一个字";
-  choiceButtons[0].querySelector("small").textContent = "获得卡牌：密信文书";
-  choiceButtons[1].dataset.reward = "none";
-  choiceButtons[1].querySelector("strong").textContent = "将密信藏于斗篷夹层";
-  choiceButtons[1].querySelector("small").textContent = "无新卡牌，证据隐藏";
+function settlementSteps(record) {
+  const steps = [];
+  if (record.storyResolved !== undefined) {
+    if (node.choices?.length) {
+      steps.push({ key: "story", label: "处置抉择" });
+    }
+    if (node.kind !== "peaceful") {
+      steps.push({ key: "reward", label: "战后选牌" });
+    }
+    if (record.oathOptions.length > 0) {
+      steps.push({ key: "oath", label: "立下誓约" });
+    }
+  }
+  steps.push({ key: "continue", label: "继续" });
+
+  return steps;
 }
 
-if (nodeId === "node-6") {
-  document.querySelector("#settlement-story").innerHTML =
-    `<p>阿尔德里克击溃伏兵，剑锋抵住老管家咽喉。对方不躲不避，冷笑一声。</p><blockquote>老管家：“你查了这么久，不就是要一个答案？是，一切都是公爵授意。三年前逼税绝粮逼民为匪，两年前雇我统领匪众供他剿杀，一年前伪造边境争端挑起战争——佩特里知道太多，我亲手埋的。如今你也有了答案。然后呢？”</blockquote>`;
-  choiceButtons[0].dataset.reward = "none";
-  choiceButtons[0].querySelector("strong").textContent = "继续效忠，置若罔闻";
-  choiceButtons[0].querySelector("small").textContent = "无新卡牌，路线锁定·愚忠结局";
-  choiceButtons[1].dataset.reward = "butler-testimony";
-  choiceButtons[1].querySelector("strong").textContent = "携证据归返，大殿对峙";
-  choiceButtons[1].querySelector("small").textContent = "获得卡牌：老管家口供，路线锁定·真相结局";
-  choiceButtons[2]?.remove();
-  const thirdChoice = document.createElement("button");
-  thirdChoice.className = "settlement-choice sheet";
-  thirdChoice.type = "button";
-  thirdChoice.dataset.reward = "none";
-  thirdChoice.innerHTML = '<span class="choice-number">03</span><span class="choice-body"><strong>销毁所有证据，远走他乡</strong><small>无新卡牌，路线锁定·归隐结局</small></span>';
-  document.querySelector("#settlement-choices").append(thirdChoice);
-  choiceButtons.push(thirdChoice);
+function renderContext(record, chosen, ending, run) {
+  const story = document.querySelector("#settlement-story");
+  story.replaceChildren();
+  if (ending) {
+    return;
+  }
+  const paragraphs = chosen
+    ? [
+        nodeId === "node-6" &&
+        chosen.id === "rebel" &&
+        (run.choices.knight !== "spare" || run.choices.temple !== "protect")
+          ? "你选择反抗，但证人与民众的支持尚不齐备。完成战后选牌后，本趟旅程将以「孤证难鸣」结束。"
+          : chosen.aftermath,
+      ]
+    : (node.aftermath ?? []);
+  if (paragraphs.length > 0) {
+    story.append(element("p", "settlement-context-lead", paragraphs.at(-1)));
+  }
+  if (!chosen && paragraphs.length > 1) {
+    const details = element("details", "settlement-context-details");
+    details.append(element("summary", "", "查看战后经过"));
+    for (const text of paragraphs.slice(0, -1)) {
+      details.append(element("p", "", text));
+    }
+    story.append(details);
+  }
+  const relic = RELICS.find((entry) => entry.id === record.relicId);
+  if (relic) {
+    story.append(
+      element(
+        "p",
+        "settlement-found",
+        `已获得战具：${relic.name} · ${relic.text}`,
+      ),
+    );
+  }
 }
 
-if (title) {
-  title.textContent = result === "victory" ? "战斗胜利" : "战斗结束";
+function renderStory(choices, run, pending) {
+  const actions = {
+    recruit: "接受投降，领取卡牌",
+    execute: nodeId === "node-4" ? "处决骑士，领取嘉奖" : "执行军令，领取赏金",
+    expel: "驱逐蛮族，领取军需",
+    mercy: "放行蛮族，领取卡牌",
+    continue: "领取卡牌并继续",
+    spare: "放走骑士，领取卡牌",
+    destroy: "摧毁庙宇，征用补给",
+    protect: "保护庙宇，领取卡牌",
+    loyal: "选择普通结局，继续结算",
+    rebel: "反抗领主，继续结算",
+  };
+  for (const choice of node.choices) {
+    const disabledReason =
+      nodeId === "node-5" &&
+      pending.result === "victory" &&
+      choice.id === "protect"
+        ? "庙宇中的人已被击溃，无法再选择保护。"
+        : "";
+    const effects = choiceEffects(choice, run);
+    choices.append(
+      choiceCard({
+        title: choice.title,
+        description: choice.description,
+        eyebrow: choice.rewardId ? "剧情选择 · 获得专属牌" : "剧情选择",
+        icon: "choice",
+        effects,
+        action: `${actions[choice.id]} →`,
+        disabledReason,
+        onClick() {
+          const updated = settleChapter(nodeId, choice.id);
+          const record =
+            updated.pendingBattle?.nodeId === nodeId
+              ? updated.pendingBattle
+              : updated.records[nodeId];
+          receipt = {
+            title: `已选择：${choice.title}`,
+            text: "这项处置已记录在本趟冒险中。",
+            effects: [
+              ...storyRewardEffects(record, choice),
+              ...choiceFutureEffects(choice, updated),
+            ],
+          };
+          render();
+        },
+      }),
+    );
+  }
 }
 
-if (copy) {
-  copy.textContent = skipped
-    ? "你跳过了这场苦战，前方的路仍在继续。"
-    : "你已完成这一场战斗，下一段路正在等待你踏入。";
+function renderRewards(rewards, run, pending) {
+  const options = element("div", "reward-options");
+  for (const id of pending.rewardOptions) {
+    const card = cardById(id);
+    options.append(
+      choiceCard({
+        title: card.name,
+        eyebrow: "战后奖励 · 免费选 1 张",
+        icon: "cards",
+        content: cardDetails(card),
+        action: `将「${card.name}」加入牌组 →`,
+        onClick() {
+          chooseBattleReward(id);
+          receipt = {
+            title: `「${card.name}」已加入牌组`,
+            text: `本趟牌组现有 ${getRun().deck.length} 张牌，下场战斗起可以抽到。`,
+            effects: [{ label: "本次花费", value: "0 灰烬", tone: "neutral" }],
+          };
+          render();
+        },
+      }),
+    );
+  }
+  rewards.append(options);
+  const alternatives = element("div", "settlement-alternatives");
+  alternatives.append(
+    choiceCard({
+      title: "换一组奖励",
+      description: "重新随机生成 3 张候选牌，随后仍可选择或跳过。",
+      icon: "refresh",
+      effects: [{ label: "花费", value: "10 灰烬", tone: "cost" }],
+      action: "支付 10 灰烬，重掷 →",
+      disabledReason:
+        run.ashes < 10
+          ? `还差 ${10 - run.ashes} 灰烬；当前持有 ${run.ashes}。`
+          : "",
+      onClick() {
+        rerollBattleReward();
+        receipt = {
+          title: "奖励候选已更换",
+          text: "从新的一组奖励中选 1 张，或跳过换取灰烬。",
+          effects: [
+            { label: "已花费", value: "10 灰烬", tone: "cost" },
+            { label: "剩余", value: `${getRun().ashes} 灰烬`, tone: "neutral" },
+          ],
+        };
+        render();
+      },
+    }),
+    choiceCard({
+      title: "保持精简，领取灰烬",
+      description: "放弃本次战后奖励牌，牌组数量不变。",
+      icon: "ashes",
+      effects: [{ label: "获得", value: "+12 灰烬", tone: "gain" }],
+      action: "跳过选牌，领取 12 灰烬 →",
+      onClick() {
+        chooseBattleReward(null);
+        receipt = {
+          title: "已跳过选牌，获得 12 灰烬",
+          text: `牌组保持 ${getRun().deck.length} 张；当前持有 ${getRun().ashes} 灰烬。`,
+          effects: [{ label: "本次获得", value: "+12 灰烬", tone: "gain" }],
+        };
+        render();
+      },
+    }),
+  );
+  rewards.append(alternatives);
 }
 
-backBtn?.addEventListener("click", () => {
+function renderOaths(rewards, pending) {
+  const options = element("div", "reward-options");
+  for (const id of pending.oathOptions) {
+    const oath = OATHS.find((entry) => entry.id === id);
+    options.append(
+      choiceCard({
+        title: oath.name,
+        eyebrow: "本趟唯一誓约",
+        icon: "oath",
+        description: oath.text,
+        effects: [
+          {
+            label: "生效时间",
+            value: "下一场战斗起，持续至本趟冒险结束",
+            tone: "gain",
+          },
+          {
+            label: "选择限制",
+            value: "只能持有一个，选定后本趟不可更换",
+            tone: "risk",
+          },
+        ],
+        action: `立下「${oath.name}」→`,
+        onClick() {
+          chooseOath(id);
+          receipt = {
+            title: `已立下「${oath.name}」`,
+            text: oath.text,
+            effects: [{ label: "生效", value: "下一场战斗起", tone: "gain" }],
+          };
+          render();
+        },
+      }),
+    );
+  }
+  rewards.append(options);
+}
+
+function renderSummary(root, record, chosen, run) {
+  const effects = [];
+  if (record.ashesReward > 0) {
+    effects.push({
+      label: "战斗报酬已入账",
+      value: `+${record.ashesReward} 灰烬`,
+      tone: "gain",
+    });
+  }
+  if (chosen) {
+    effects.push({ label: "处置", value: chosen.title, tone: "neutral" });
+  }
+  effects.push(...storyRewardEffects(record, chosen));
+  if (record.rewardId) {
+    effects.push({
+      label: "战后选牌已加入",
+      value: cardById(record.rewardId).name,
+      tone: "gain",
+    });
+  }
+  if (record.rewardResolved && node.kind !== "peaceful" && !record.rewardId) {
+    effects.push({ label: "跳过选牌", value: "+12 灰烬", tone: "gain" });
+  }
+  if (record.oathOptions?.length && record.oathResolved) {
+    effects.push({
+      label: "唯一誓约",
+      value: OATHS.find((oath) => oath.id === run.oath).name,
+      tone: "gain",
+    });
+  }
+  if (effects.length === 0) {
+    root.hidden = true;
+    root.replaceChildren();
+
+    return;
+  }
+  resultNotice(root, { title: "已确认的选择与所得", effects });
+}
+
+function render() {
+  const run = getRun();
+  const pending =
+    run.pendingBattle?.nodeId === nodeId ? run.pendingBattle : null;
+  const record = pending ?? run.records[nodeId];
+  if (!record) {
+    location.replace(getNodeEntry(run.progress.current));
+
+    return;
+  }
+  const ending =
+    run.ending && run.progress.current === nodeId ? ENDINGS[run.ending] : null;
+  const chosen = node.choices?.find((choice) => choice.id === record.choiceId);
+  const choices = document.querySelector("#settlement-choices");
+  const rewards = document.querySelector("#settlement-rewards");
+  choices.replaceChildren();
+  rewards.replaceChildren();
+  document.querySelector("#settlement-chapter").textContent = node.label;
+  document.querySelector("#settlement-title").textContent =
+    ending?.title ??
+    (node.kind === "duel"
+      ? "决斗结束"
+      : node.kind === "peaceful"
+        ? "庙门前的抉择"
+        : "战斗胜利");
+  document.querySelector("#settlement-seal").textContent =
+    ending?.seal ?? node.seal ?? "胜";
+  document.querySelector("#settlement-copy").textContent =
+    ending?.text ?? "按下方步骤领取补给，整理队伍后继续前行。";
+  renderRunStatus(document.querySelector("#settlement-status"), run);
+  renderContext(record, chosen, ending, run);
+  const stage = pending
+    ? pending.storyResolved
+      ? pending.rewardResolved
+        ? "oath"
+        : "reward"
+      : "story"
+    : "continue";
+  const steps = settlementSteps(record);
+  const stepIndex = steps.findIndex((step) => step.key === stage);
+  renderSteps(
+    document.querySelector("#settlement-steps"),
+    steps.map((step) => step.label),
+    stepIndex,
+  );
+  const headings = {
+    story: [
+      "处置抉择",
+      "选择一项。立即获得与后续影响分别列出，确认后本趟不可更改。",
+    ],
+    reward: [
+      "战后选牌 · 三选一",
+      "免费选 1 张加入本趟牌组；也可花费灰烬重掷，或跳过领取 12 灰烬。",
+    ],
+    oath: ["立下本趟唯一誓约", "从 3 种誓约中选 1 种，下一场战斗开始生效。"],
+    continue: [
+      ending ? "旅程已结束" : "整备完成，可以继续",
+      ending
+        ? "结局与图鉴会保留。新旅程会重新开始牌组、路线与成长。"
+        : "返回地图，选择下一处目的地。",
+    ],
+  };
+  document
+    .querySelector("#settlement-step-heading")
+    .replaceChildren(
+      sectionHeading(
+        ...headings[stage],
+        String(stepIndex + 1).padStart(2, "0"),
+      ),
+    );
+  if (stage === "story") {
+    renderStory(choices, run, pending);
+  } else if (stage === "reward") {
+    renderRewards(rewards, run, pending);
+  } else if (stage === "oath") {
+    renderOaths(rewards, pending);
+  }
+  const receiptRoot = document.querySelector("#settlement-receipt");
+  if (receipt) {
+    resultNotice(receiptRoot, receipt);
+  } else {
+    receiptRoot.hidden = true;
+    receiptRoot.replaceChildren();
+  }
+  renderSummary(
+    document.querySelector("#settlement-summary"),
+    record,
+    chosen,
+    run,
+  );
+  const outcome = document.querySelector("#settlement-outcome");
+  outcome.textContent = pending
+    ? `还需完成「${headings[stage][0]}」后才能继续。每次选择会自动保存，刷新可继续本步骤。`
+    : ending
+      ? "可以查看冒险地图，或开启一趟新的旅程。"
+      : `下一站：${run.progress.available.map((id) => getMapNode(id).label).join(" / ")}。`;
+  back.disabled = Boolean(pending);
+  back.textContent = pending
+    ? `先完成${steps[stepIndex].label}`
+    : ending
+      ? "查看冒险地图"
+      : "返回地图，选择下一站 →";
+  back.setAttribute("aria-describedby", "settlement-outcome");
+  restart.hidden = !ending;
+  if (receipt) {
+    const heading = document.querySelector("#settlement-step-heading");
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView({ block: "start", behavior: "instant" });
+  }
+}
+
+back.addEventListener("click", () => {
   location.href = "/game/map.html";
 });
-
-for (const button of choiceButtons) {
-  button.addEventListener("click", () => {
-    const rewardId = button.dataset.reward;
-    const reward = PLAYER_CARDS.find((card) => card.id === rewardId);
-    if (!reward && rewardId !== "none") {
-      return;
-    }
-
-    const profile = getProfile();
-    const codex = new Set(profile.codex);
-    for (const cardId of chapterEnemyCards[nodeId] ?? []) {
-      codex.add(`enemy:${cardId}`);
-    }
-    if (reward) {
-      codex.add(`player:${reward.id}`);
-    }
-    const branch = button.dataset.branch ?? profile.branch;
-    const nextNode = nodeId === "node-1"
-      ? branch === "traitor" ? "rebel-2" : "node-2"
-      : profile.progress?.current;
-    const branchStart = nodeId === "node-1"
-      ? nextNode
-      : profile.progress?.current;
-    const unlocked = nodeId === "node-1"
-      ? ["node-1", branchStart]
-      : [
-          ...(profile.progress?.unlocked ?? ["node-1"]),
-          ...(branchStart ? [branchStart] : []),
-        ];
-    setProfile({
-      ...profile,
-      branch,
-      progress: branchStart
-        ? { current: branchStart, unlocked: [...new Set(unlocked)] }
-        : profile.progress,
-      codex: [...codex],
-      rewards: { ...profile.rewards, [nodeId]: reward?.id ?? null },
-      evidenceHidden: {
-        ...(profile.evidenceHidden ?? {}),
-        [nodeId]: rewardId === "none",
-      },
-    });
-    for (const choice of choiceButtons) {
-      choice.classList.toggle("selected", choice === button);
-    }
-    if (backBtn) {
-      backBtn.disabled = false;
-    }
-  });
+restart.addEventListener("click", () => {
+  startNewCampaign();
+  location.href = "/game/map.html";
+});
+if (requireCampaignNode(nodeId, { allowCompleted: true })) {
+  render();
 }

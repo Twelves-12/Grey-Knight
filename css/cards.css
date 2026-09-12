@@ -1,3 +1,5 @@
+@import url("../game/styles/card-watermark.css");
+
 .codex-page {
   padding: clamp(28px, 5vw, 64px) clamp(18px, 5vw, 72px);
 }
@@ -33,7 +35,7 @@
 }
 .codex-filters {
   display: grid;
-  grid-template-columns: minmax(170px, 2fr) repeat(3, minmax(100px, 1fr)) auto;
+  grid-template-columns: minmax(170px, 2fr) repeat(4, minmax(100px, 1fr)) auto;
   align-items: end;
   gap: 14px;
   padding: 22px 0;
@@ -79,17 +81,24 @@
 }
 .codex-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start;
   gap: 20px;
 }
 .codex-card {
   --card-accent: #d1bc8b;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   border: 1px solid #8d805657;
   border-radius: 3px;
   background:
     radial-gradient(ellipse at 50% 30%, #84703a17, transparent 65%),
     linear-gradient(#20271ee0, #0e140fed);
+}
+.codex-card > :not(.card-watermark) {
+  position: relative;
+  z-index: 1;
 }
 .codex-card.enemy {
   --card-accent: #b2a1c7;
@@ -98,18 +107,10 @@
     radial-gradient(ellipse at 50% 30%, #8c619c15, transparent 65%),
     linear-gradient(#222028e0, #101015ed);
 }
-.codex-card summary {
-  position: relative;
-  display: block;
+.codex-card-heading {
   padding: 18px 20px 14px;
-  cursor: pointer;
-  list-style: none;
 }
-.codex-card summary::-webkit-details-marker {
-  display: none;
-}
-.codex-card:hover,
-.codex-card[open] {
+.codex-card:hover {
   border-color: var(--card-accent);
 }
 .codex-card-top {
@@ -117,29 +118,11 @@
   justify-content: space-between;
   gap: 8px;
   color: var(--card-accent);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.08em;
 }
-.codex-sigil {
-  display: grid;
-  place-items: center;
-  width: 90px;
-  height: 90px;
-  margin: 24px auto 20px;
-  border: 1px solid color-mix(in srgb, var(--card-accent) 24%, transparent);
-  border-radius: 50%;
-  outline: 1px solid color-mix(in srgb, var(--card-accent) 10%, transparent);
-  outline-offset: 6px;
-  color: var(--card-accent);
-  background: #060b081f;
-}
-.codex-sigil svg {
-  width: 60px;
-  height: 60px;
-}
 .codex-card h2 {
-  margin: 0 0 10px;
-  text-align: center;
+  margin: 12px 0 6px;
   color: var(--site-title);
   font-family: var(--font-display);
   font-size: 20px;
@@ -147,66 +130,54 @@
 }
 .codex-tags {
   display: block;
-  min-height: 18px;
-  text-align: center;
   color: var(--card-accent);
-  font-size: 10px;
+  font-size: 11px;
 }
 .codex-stats {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 22px;
-  padding-block: 12px;
-  border-top: 1px solid var(--site-border);
+  gap: 18px;
+  margin-top: 12px;
   color: #d3d2c2;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
-.codex-expand {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 5px;
-  color: var(--site-muted);
-  font-size: 10px;
-}
-.codex-expand::after {
-  content: "+";
-  color: var(--card-accent);
-}
-.codex-card[open] .codex-expand::after {
-  content: "−";
-}
 .codex-card-detail {
-  padding: 4px 20px 20px;
-  font-size: 12px;
+  margin-inline: 20px;
+  padding: 12px 0 18px;
+  border-top: 1px solid var(--site-border);
+  font-size: 13px;
   line-height: 1.8;
 }
 .codex-card-detail .card-rule {
   display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: baseline;
-  gap: 10px;
-  margin: 8px 0;
+  gap: 4px;
+  margin: 12px 0 0;
 }
 .codex-card-detail .rule-tag,
 .codex-card-detail .rule-value {
   color: var(--card-accent);
 }
 .codex-card-detail .rule-tag {
-  font-size: 10px;
-  white-space: nowrap;
+  font-size: 11px;
 }
 .codex-card-detail .card-inscription {
-  margin: 8px 0;
+  margin: 0;
 }
 .codex-flavor {
-  margin: 16px 0 0;
-  padding-top: 12px;
+  margin-top: 14px;
+  padding-top: 10px;
   border-top: 1px solid var(--site-border);
   font-family: var(--font-display);
   color: #a9a697;
   font-size: 11px;
+}
+.codex-flavor summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--card-accent);
+}
+.codex-flavor p {
+  margin: 8px 0 0;
 }
 .codex-empty {
   padding: 50px 20px;
@@ -223,7 +194,7 @@
 
 @media (max-width: 1000px) {
   .codex-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .codex-filters {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -238,32 +209,17 @@
 }
 @media (max-width: 640px) {
   .codex-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
-  .codex-card summary {
-    padding: 14px 12px 10px;
+  .codex-card-heading {
+    padding: 16px 18px 12px;
   }
   .codex-card h2 {
     font-size: 17px;
   }
-  .codex-sigil {
-    width: 64px;
-    height: 64px;
-    margin-block: 22px 18px;
-  }
-  .codex-sigil svg {
-    width: 44px;
-    height: 44px;
-  }
   .codex-card-detail {
-    padding-inline: 12px;
-  }
-  .codex-card-top {
-    font-size: 9px;
-  }
-  .codex-stats {
-    font-size: 11px;
+    margin-inline: 18px;
   }
   .codex-filters {
     gap: 14px 10px;

@@ -9,6 +9,7 @@ export class Player {
     this.maxHealth = def.maxHealth;
     this.#health = def.maxHealth;
     this.deck = [...def.deck];
+    this.cardPool = def.cardPool ?? def.deck;
   }
 
   get health() {

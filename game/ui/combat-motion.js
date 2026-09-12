@@ -1,3 +1,5 @@
+import { finishAnimations } from "./utils.js";
+
 /**
  * 让攻击单位向目标突进后归位。
  *
@@ -53,22 +55,26 @@ export function animateStrike(card, targetCard, side) {
  */
 export function animateRecoil(card, attacker) {
   const recoil = attacker === "player" ? -10 : 10;
-  card.animate(
-    [
-      { filter: "brightness(1)", transform: "translate3d(0, 0, 0)" },
-      {
-        filter: "brightness(2.5) saturate(0.35)",
-        offset: 0.12,
-        transform: `translate3d(-3px, ${recoil}px, 0) rotate(-1deg)`,
-      },
-      {
-        filter: "brightness(1.25)",
-        offset: 0.42,
-        transform: `translate3d(4px, ${recoil * 0.55}px, 0) rotate(1deg)`,
-      },
-      { filter: "brightness(1)", transform: "translate3d(0, 0, 0)" },
-    ],
-    { duration: 240, easing: "ease-out" },
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  return card.animate(
+    reduced
+      ? [{ opacity: 0.7 }, { opacity: 1 }]
+      : [
+          { filter: "brightness(1)", transform: "translate3d(0, 0, 0)" },
+          {
+            filter: "brightness(2.5) saturate(0.35)",
+            offset: 0.12,
+            transform: `translate3d(-3px, ${recoil}px, 0) rotate(-1deg)`,
+          },
+          {
+            filter: "brightness(1.25)",
+            offset: 0.42,
+            transform: `translate3d(4px, ${recoil * 0.55}px, 0) rotate(1deg)`,
+          },
+          { filter: "brightness(1)", transform: "translate3d(0, 0, 0)" },
+        ],
+    { duration: reduced ? 80 : 180, easing: "ease-out" },
   );
 }
 
@@ -100,14 +106,43 @@ export function animateHeroRecoil(hero) {
 /**
  * 播放单位死亡动画，结束后移除卡牌。
  *
- * TODO: 重做。最好弄成杀戮尖塔2新版的删牌效果
- *
  * @param {HTMLElement} card
+ * @param {AbortSignal} signal
  */
-export function animateDeath(card) {
+export async function animateDeath(card, signal) {
   if (card.classList.contains("dead")) {
     return;
   }
   card.classList.add("dead");
-  card.addEventListener("animationend", () => card.remove(), { once: true });
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const direction = card.classList.contains("enemy") ? -1 : 1;
+  const animation = card.animate(
+    reduced
+      ? [{ opacity: 1 }, { opacity: 0 }]
+      : [
+          {
+            opacity: 1,
+            filter: "brightness(1)",
+            transform: "translateY(0) scale(1)",
+          },
+          {
+            opacity: 0.8,
+            filter: "brightness(1.8)",
+            transform: "translateY(0) scale(1.015)",
+            offset: 0.2,
+          },
+          {
+            opacity: 0,
+            filter: "brightness(0.7) blur(2px)",
+            transform: `translateY(${direction * 12}px) scale(0.9)`,
+          },
+        ],
+    { duration: reduced ? 80 : 220, easing: "ease-out", fill: "forwards" },
+  );
+  try {
+    await finishAnimations([animation], signal);
+  } finally {
+    animation.cancel();
+    card.remove();
+  }
 }

@@ -4,6 +4,7 @@
   gap: 14px;
   min-width: 0;
   min-height: 0;
+  overflow-y: auto;
   padding: 16px;
   border: 1px solid #514638;
   border-top: 2px solid #9c7c4c;
@@ -29,6 +30,47 @@
   align-items: center;
   gap: 8px;
   min-height: 28px;
+}
+
+.enemy-deck-toggle {
+  display: grid;
+  flex-shrink: 0;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid #876e85;
+  border-radius: 4px;
+  color: #eddae9;
+  background: linear-gradient(120deg, #44303e, #252027);
+  text-align: left;
+}
+
+.enemy-deck-toggle > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.enemy-deck-toggle small {
+  color: #c2abbf;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.enemy-deck-toggle:hover:not(:disabled) {
+  border-color: #c39bb7;
+  background: linear-gradient(120deg, #513949, #332735);
+}
+
+.enemy-deck-toggle:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.enemy-deck-toggle:focus-visible {
+  outline: 2px solid var(--candle-bright);
+  outline-offset: 3px;
 }
 
 .command-toolbar .top-icons {
@@ -215,6 +257,86 @@
   filter: drop-shadow(0 0 8px rgba(255, 163, 50, 0.42));
 }
 
+.candle.locked {
+  opacity: 0.08;
+}
+
+.target-prompt {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #c1b275;
+  color: #efdb9d;
+  background: #26281b;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.target-prompt[hidden] {
+  display: none;
+}
+
+.battle-actions,
+.action-choices {
+  display: grid;
+  gap: 7px;
+}
+
+.battle-actions [hidden] {
+  display: none;
+}
+
+.direction-actions,
+.selection-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.battle-actions .btn,
+.action-choices .btn {
+  min-width: 0;
+  width: 100%;
+  padding: 8px 5px;
+  font-size: 11px;
+}
+
+.direction-actions [aria-pressed="true"] {
+  border-color: #e7c582;
+  background: #665030;
+  color: #fff0bd;
+}
+
+.battle-actions .btn:disabled,
+.action-choices .btn:disabled {
+  border-color: #575344;
+  background: #262622;
+  color: #aaa394;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.battle-status {
+  color: #c5bdab;
+  font-size: 10px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.encounter-brief {
+  color: #bbb0a0;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.encounter-brief summary {
+  cursor: pointer;
+  color: #e0bd87;
+}
+
+.encounter-brief p {
+  margin: 8px 0 0;
+}
+
 .candle.lit::before {
   opacity: 1;
   animation: flame-flicker 0.55s ease-in-out infinite alternate;
@@ -355,6 +477,32 @@
 }
 
 @media (max-width: 900px) {
+  .battle-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: minmax(0, 1fr) repeat(2, auto);
+  }
+
+  .battle-status {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .action-choices {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .encounter-brief {
+    grid-column: 1 / -1;
+    grid-row: 6;
+  }
+
+  .target-prompt {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
   #stage > .command-panel {
     position: sticky;
     bottom: 0;
@@ -449,7 +597,7 @@
 
   #skip-battle {
     grid-column: 1 / -1;
-    grid-row: 2;
+    grid-row: 7;
     width: 100%;
   }
 

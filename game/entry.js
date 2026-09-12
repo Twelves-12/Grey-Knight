@@ -4,16 +4,18 @@ import "../js/site.js";
 
 window.addEventListener("pageshow", (event) => {
   if (event.persisted) {
-    requireSession();
+    // Restore the current run rather than the browser's stale page snapshot.
+    location.reload();
   }
 });
 document.addEventListener("signout", requireSession);
 window.addEventListener("storage", (event) => {
   if (
     event.storageArea === localStorage &&
-    (event.key === "grey-knight:session" || event.key === null)
+    (event.key === "grey-knight:session" || event.key === null) &&
+    requireSession()
   ) {
-    requireSession();
+    location.reload();
   }
 });
 

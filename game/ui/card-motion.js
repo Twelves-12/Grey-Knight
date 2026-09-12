@@ -196,6 +196,74 @@ export async function dealCard(card, origin, layer, signal) {
 }
 
 /**
+ * 军令和独立行动牌离手时短暂抬起，再化作光点。
+ * @param {CardOrigin & {face: HTMLElement}} origin
+ * @param {string} label
+ * @param {HTMLElement} layer
+ * @param {AbortSignal} signal
+ */
+export async function consumeCard(origin, label, layer, signal) {
+  if (signal.aborted) {
+    return;
+  }
+  const flight = el("div", "card-flight card-action-flight");
+  const { bounds } = origin;
+  flight.style.left = `${bounds.left}px`;
+  flight.style.top = `${bounds.top}px`;
+  flight.style.width = `${bounds.width}px`;
+  flight.style.height = `${bounds.height}px`;
+  flight.append(cloneFace(origin.face));
+  const caption = el("div", "card-action-label", label);
+  caption.style.left = `${bounds.left + bounds.width / 2}px`;
+  caption.style.top = `${Math.max(20, bounds.top - 20)}px`;
+  layer.append(flight, caption);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const animations = [
+    flight.animate(
+      reduced
+        ? [{ opacity: 1 }, { opacity: 0 }]
+        : [
+            {
+              opacity: 1,
+              transform: "translateY(0) scale(1)",
+              filter: "brightness(1)",
+            },
+            {
+              opacity: 1,
+              transform: "translateY(-22px) scale(1.025)",
+              filter: "brightness(1.3)",
+              offset: 0.38,
+            },
+            {
+              opacity: 0,
+              transform: "translateY(-38px) scale(0.94)",
+              filter: "brightness(1.6) blur(2px)",
+            },
+          ],
+      { duration: reduced ? 120 : 260, easing: "ease-out", fill: "forwards" },
+    ),
+    caption.animate(
+      [
+        { opacity: 0 },
+        { opacity: 1, offset: 0.18 },
+        { opacity: 1, offset: 0.75 },
+        { opacity: 0 },
+      ],
+      { duration: reduced ? 120 : 280, fill: "forwards" },
+    ),
+  ];
+  try {
+    await finishAnimations(animations, signal);
+  } finally {
+    for (const animation of animations) {
+      animation.cancel();
+    }
+    flight.remove();
+    caption.remove();
+  }
+}
+
+/**
  * @param {HTMLElement} card
  * @param {DOMRect} target
  * @param {CardOrigin} origin
@@ -232,7 +300,7 @@ function createFlight(card, target, origin) {
  * @param {HTMLElement} card
  */
 function cloneFace(card) {
-  const face = card.cloneNode(true);
+  const face = /** @type {HTMLElement} */ (card.cloneNode(true));
   face.classList.remove("selected", "disabled", "dragging");
   face.style.visibility = "";
   face.style.width = "100%";

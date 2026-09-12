@@ -1,3 +1,5 @@
+@import url("./card-watermark.css");
+
 .card {
   --face-top: #393c34;
   --face-bottom: #202822;
@@ -207,8 +209,79 @@
   white-space: nowrap;
 }
 
-.card.first-strike:not(.hand-card) .c-kicker {
+.card:is(.first-strike, .piercing):not(.hand-card) .c-kicker {
   display: block;
+}
+
+.c-faction {
+  align-self: flex-end;
+  margin-bottom: 2px;
+  color: #dec69a;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.card[data-faction="B"] .c-faction {
+  color: #edb596;
+}
+
+.card[data-faction="C"] .c-faction {
+  color: #a5d3ce;
+}
+
+.card .stat.buffed:not(.damaged) {
+  color: #b8ecb8;
+}
+
+.card .c-status {
+  display: none;
+}
+
+.card.frozen {
+  border-color: #8edbec;
+  box-shadow:
+    inset 0 0 24px #78cceb45,
+    0 0 12px #78cceb38;
+}
+
+.card.has-status .c-status {
+  position: absolute;
+  inset: auto 0 36%;
+  display: block;
+  padding: 4px 1px;
+  background: #1c4a5bea;
+  color: #dbf6ff;
+  text-align: center;
+  font-size: 8px;
+  pointer-events: none;
+}
+
+.c-card-type,
+.c-marks {
+  align-self: center;
+  color: #c2d4e7;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.c-marks {
+  padding-top: 3px;
+  color: #e1c592;
+}
+
+.card[data-type="ritual"] {
+  --accent: #a88adb;
+  --face-top: #343047;
+}
+
+.card[data-type="enhancement"] {
+  --accent: #86baa4;
+}
+
+.command-rule {
+  padding-top: 5px;
+  border-top: 1px solid #d1bd8d38;
 }
 
 .card .c-cost {

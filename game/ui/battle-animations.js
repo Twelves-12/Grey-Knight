@@ -1,3 +1,4 @@
+import { consumeCard } from "./card-motion.js";
 import { setCardHp } from "./card-view.js";
 import {
   animateDeath,
@@ -14,7 +15,7 @@ import {
   impact,
   redFlash,
 } from "./fx.js";
-import { wait } from "./utils.js";
+import { el, finishAnimations, wait } from "./utils.js";
 
 /**
  * @typedef {import("../types.js").BattleCells} BattleCells
@@ -46,6 +47,181 @@ export class BattleAnimations {
     this.#overlayRoot = elements.overlayRoot;
     this.#audio = elements.audio;
     this.#stage = elements.stage;
+  }
+
+  /** @param {import("../types.js").CardActionEvent} event @param {import("./card-motion.js").CardOrigin & {face: HTMLElement}} origin @param {AbortSignal} signal */
+  async cardAction(event, origin, signal) {
+    this.#audio.play(event.mode === "order" ? "select" : "energy");
+    await consumeCard(
+      origin,
+      `${event.card.name} · ${event.mode === "order" ? "军令" : "使用"}`,
+      this.#fxLayer,
+      signal,
+    );
+  }
+
+  /** @param {import("../types.js").UnitHitEvent} event @param {AbortSignal} signal @param {() => HTMLElement} onImpact */
+  async unitHit(event, signal, onImpact) {
+    if (signal.aborted) {
+      return;
+    }
+    const source =
+      event.origin.col === undefined
+        ? this.#heroes[event.origin.side].seal
+        : this.#cells[event.origin.side][event.origin.col];
+    const target = this.#cells[event.target.side][event.target.col];
+    await this.#projectile(
+      source,
+      target,
+      event.origin.side === "enemy",
+      signal,
+    );
+    if (signal.aborted) {
+      return;
+    }
+    const card = onImpact();
+    const lethal = event.unit.hp <= 0;
+    const label =
+      event.amount > 0
+        ? `−${event.amount}${event.blocked ? ` · 格挡 ${event.blocked}` : ""}`
+        : event.blocked > 0
+          ? `格挡 ${event.blocked}`
+          : "伤害抵挡";
+    this.#audio.play(lethal ? "kill" : event.amount ? "fight" : "place");
+    await this.#unitFeedback(
+      card,
+      cellCenter(target),
+      label,
+      event.amount ? "harm" : "neutral",
+      signal,
+      event.origin.side,
+    );
+    if (!signal.aborted && lethal) {
+      await animateDeath(card, signal);
+    }
+  }
+
+  /** @param {import("../types.js").UnitEffectEvent} event @param {AbortSignal} signal @param {() => HTMLElement} onApply */
+  async unitEffect(event, signal, onApply) {
+    if (signal.aborted) {
+      return;
+    }
+    const card = onApply();
+    this.#audio.play(
+      event.tone === "benefit"
+        ? "heal"
+        : event.tone === "harm"
+          ? "select"
+          : "place",
+    );
+    await this.#unitFeedback(
+      card,
+      cellCenter(this.#cells[event.target.side][event.target.col]),
+      event.label,
+      event.tone,
+      signal,
+    );
+    if (event.remove && !signal.aborted) {
+      const animation = card.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 100,
+        fill: "forwards",
+      });
+      try {
+        await finishAnimations([animation], signal);
+      } finally {
+        animation.cancel();
+        card.remove();
+      }
+    }
+  }
+
+  /** @param {HTMLElement} source @param {HTMLElement} target @param {boolean} shadow @param {AbortSignal} signal */
+  async #projectile(source, target, shadow, signal) {
+    const from = cellCenter(source);
+    const to = cellCenter(target);
+    const dx = to[0] - from[0];
+    const dy = to[1] - from[1];
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const shot = el("div", reduced ? "unit-ray" : "unit-projectile");
+    shot.classList.toggle("shadow", shadow);
+    shot.style.left = `${from[0]}px`;
+    shot.style.top = `${from[1]}px`;
+    shot.style.setProperty("--angle", `${Math.atan2(dy, dx)}rad`);
+    if (reduced) {
+      shot.style.width = `${Math.hypot(dx, dy)}px`;
+    }
+    this.#fxLayer.append(shot);
+    const animation = shot.animate(
+      reduced
+        ? [{ opacity: 0 }, { opacity: 0.7 }, { opacity: 0 }]
+        : [
+            { translate: "0 0", opacity: 0 },
+            { opacity: 1, offset: 0.12 },
+            { translate: `${dx}px ${dy}px`, opacity: 1 },
+          ],
+      { duration: reduced ? 80 : 160, easing: "ease-in", fill: "forwards" },
+    );
+    try {
+      await finishAnimations([animation], signal);
+    } finally {
+      animation.cancel();
+      shot.remove();
+    }
+  }
+
+  /** @param {HTMLElement} card @param {readonly [number, number]} point @param {string} label @param {"benefit" | "harm" | "neutral"} tone @param {AbortSignal} signal @param {"player" | "enemy"} [attacker] */
+  async #unitFeedback(card, point, label, tone, signal, attacker) {
+    const caption = el("div", `unit-effect-label ${tone}`, label);
+    caption.style.left = `${point[0]}px`;
+    caption.style.top = `${point[1] - 28}px`;
+    const ring = el("div", `unit-effect-ring ${tone}`);
+    ring.style.left = `${point[0]}px`;
+    ring.style.top = `${point[1]}px`;
+    this.#fxLayer.append(ring, caption);
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timing = { duration: reduced ? 100 : 190, easing: "ease-out" };
+    const animations = [
+      caption.animate(
+        reduced
+          ? [{ opacity: 1 }, { opacity: 0 }]
+          : [
+              { opacity: 0, translate: "0 5px" },
+              { opacity: 1, offset: 0.2 },
+              { opacity: 0, translate: "0 -17px" },
+            ],
+        timing,
+      ),
+      ring.animate(
+        reduced
+          ? [{ opacity: 0.65 }, { opacity: 0 }]
+          : [
+              { opacity: 0.8, scale: 0.65 },
+              { opacity: 0, scale: 1.35 },
+            ],
+        timing,
+      ),
+      attacker
+        ? animateRecoil(card, attacker)
+        : card.animate(
+            reduced
+              ? [{ opacity: 0.7 }, { opacity: 1 }]
+              : [
+                  { filter: "brightness(1)" },
+                  { filter: "brightness(1.5)", offset: 0.25 },
+                  { filter: "brightness(1)" },
+                ],
+            timing,
+          ),
+    ];
+    try {
+      await finishAnimations(animations, signal);
+    } finally {
+      for (const animation of animations) {
+        animation.cancel();
+      }
+      caption.remove();
+      ring.remove();
+    }
   }
 
   /**
@@ -163,7 +339,7 @@ export class BattleAnimations {
         const dying = cell.querySelector(".card");
         const center = cellCenter(cell);
         if (dying instanceof HTMLElement) {
-          animateDeath(dying);
+          await animateDeath(dying, signal);
         }
         await wait(90, signal);
         if (signal.aborted) {
@@ -289,7 +465,7 @@ export class BattleAnimations {
 
   reset() {
     this.#stage.classList.remove("combat-resolving");
-    for (const animation of this.#stage.getAnimations()) {
+    for (const animation of this.#stage.getAnimations({ subtree: true })) {
       animation.cancel();
     }
     for (const { root } of Object.values(this.#heroes)) {

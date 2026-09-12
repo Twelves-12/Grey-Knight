@@ -13,6 +13,14 @@ export class Random {
     return Math.floor(this.next() * maxExclusive);
   }
 
+  get state() {
+    return this.#state;
+  }
+
+  set state(value) {
+    this.#state = value >>> 0;
+  }
+
   /**
    * 把当前随机数生成器复制一个。方便不同的系统，比如抽牌和事件，不互相影响
    */

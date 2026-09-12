@@ -6,6 +6,7 @@ import { BattleHud } from "./battle-hud.js";
 import { BattleInput } from "./battle-input.js";
 import { dealCard } from "./card-motion.js";
 import { CardTooltip } from "./card-tooltip.js";
+import { EnemyDeck } from "./enemy-deck.js";
 import { wait } from "./utils.js";
 
 /** @type {Record<"defeat" | "draw", import("../types.js").ResultContent>} */
@@ -34,6 +35,9 @@ export class BattleView {
   #overlayRoot;
   #resultTemplate;
   #restart;
+  #enemyDeck;
+  #deckButton;
+  #openEnemyDeck;
 
   /**
    * @param {HTMLElement} room
@@ -55,6 +59,8 @@ export class BattleView {
     this.#board = new BattleBoard($("#board", stage), cardTemplate);
     this.#hand = new BattleHand(hand, cardTemplate);
     this.#tooltip = new CardTooltip(this.#overlayRoot);
+    this.#enemyDeck = new EnemyDeck(room);
+    this.#deckButton = $("#enemy-deck-toggle", stage);
     this.#animations = new BattleAnimations({
       audio,
       cells: this.#board.cells,
@@ -75,10 +81,19 @@ export class BattleView {
       },
       controls,
     );
+    this.#openEnemyDeck = () => {
+      if (!controls.canAct()) {
+        return;
+      }
+      this.#input.reset();
+      this.#tooltip.hide();
+      this.#enemyDeck.open(controls.getBattle());
+    };
   }
 
   attach() {
     this.#input.attach();
+    this.#deckButton.addEventListener("click", this.#openEnemyDeck);
     this.#hud.syncMute(this.#audio.muted);
   }
 
@@ -89,6 +104,7 @@ export class BattleView {
   }
 
   #reset() {
+    this.#enemyDeck.close();
     this.#input.reset();
     this.#animations.reset();
     this.#board.reset();
@@ -99,13 +115,16 @@ export class BattleView {
 
   /** @param {import("../game/battle.js").Battle} battle */
   lock(battle) {
+    this.#enemyDeck.close();
     this.#input.reset();
     this.#syncHud(battle, true);
   }
 
   /** @param {import("../game/battle.js").Battle} battle */
   ready(battle) {
+    this.#board.render(battle.boardState);
     this.#board.renderIntent(battle);
+    this.#hand.sync(battle);
     this.#syncHud(battle, false);
   }
 
@@ -114,8 +133,10 @@ export class BattleView {
    * @param {boolean} blocked
    */
   #syncHud(battle, blocked) {
-    this.#hand.sync(battle);
+    // The model may already contain cards whose draw animations are queued.
+    // Only hand events reveal them; ready() reconciles once the queue is empty.
     this.#hud.sync(battle, blocked);
+    this.#input.sync();
   }
 
   #toggleMute = () => {
@@ -127,14 +148,14 @@ export class BattleView {
    * @param {import("../game/battle.js").Battle} battle
    * @param {number} index
    * @param {number} col
+   * @param {import("../types.js").DisplayUnit} unit
    * @param {AbortSignal} signal
    * @param {import("./card-motion.js").DraggedCard} [drag]
    */
-  async deploy(battle, index, col, signal, drag) {
+  async deploy(battle, index, col, unit, signal, drag) {
     const origin = this.#hand.take(index);
     this.#input.reset();
     this.#syncHud(battle, true);
-    const unit = battle.playerBoard[col];
     const card = this.#board.place("player", col, unit);
     if (drag) {
       await drag.land(card, signal);
@@ -153,6 +174,62 @@ export class BattleView {
    */
   async playEvent(event, battle, signal) {
     switch (event.kind) {
+      case "board": {
+        this.#board.render(event.state);
+        this.#syncHud(battle, true);
+
+        break;
+      }
+      case "cardAction": {
+        this.#tooltip.hide();
+        const origin =
+          /** @type {import("./card-motion.js").CardOrigin & {face: HTMLElement}} */ (
+            this.#hand.take(event.index)
+          );
+        await this.#animations.cardAction(event, origin, signal);
+
+        break;
+      }
+      case "unitHit": {
+        await this.#animations.unitHit(event, signal, () =>
+          this.#board.update(event.target.side, event.target.col, event.unit),
+        );
+
+        break;
+      }
+      case "unitEffect": {
+        await this.#animations.unitEffect(event, signal, () =>
+          this.#board.update(event.target.side, event.target.col, event.unit),
+        );
+
+        break;
+      }
+      case "move": {
+        await this.#board.move(event, signal);
+
+        break;
+      }
+      case "unitDeath": {
+        await this.#board.remove(event, signal);
+
+        break;
+      }
+      case "handSync": {
+        this.#hand.sync(battle, event.cards);
+        this.#syncHud(battle, true);
+
+        break;
+      }
+      case "breakthrough": {
+        await this.#board.showBreakthrough(
+          event.from,
+          event.to,
+          event.bonus,
+          signal,
+        );
+
+        break;
+      }
       case "victory":
       case "defeat":
       case "draw": {
@@ -183,7 +260,6 @@ export class BattleView {
       case "fight": {
         await this.#animations.fight(event, signal);
         if (!signal.aborted) {
-          this.#board.render(battle);
           this.#syncHud(battle, true);
         }
 
@@ -207,7 +283,7 @@ export class BattleView {
       case "drawCard": {
         this.#tooltip.hide();
         this.#audio.play("draw");
-        const card = this.#hand.add(event.card);
+        const card = this.#hand.draw(event.card, battle.cardCost(event.card));
         await dealCard(
           card,
           { bounds: this.#hud.heroes.player.seal.getBoundingClientRect() },
@@ -241,7 +317,6 @@ export class BattleView {
         break;
       }
       case "round": {
-        this.#board.render(battle);
         this.#syncHud(battle, true);
         this.#audio.play("round");
         await this.#board.showRound(event.round, signal);
@@ -261,7 +336,7 @@ export class BattleView {
         ? { accent: kind, ...battle.encounter.victory }
         : ENDINGS[kind];
     const stats = battle.stats;
-    this.#board.render(battle);
+    this.#board.render(battle.boardState);
     this.#board.renderIntent(battle);
     this.#overlayRoot.replaceChildren();
     const fragment = this.#resultTemplate.content.cloneNode(true);

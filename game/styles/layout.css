@@ -6,7 +6,7 @@
   height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
-  --hand-card-height: 234px;
+  --hand-card-height: 250px;
   --candle: #cfa667;
   --candle-bright: #f1d29c;
   --candle-dim: #77603e;
@@ -132,10 +132,6 @@
 }
 
 @media (max-height: 780px) and (min-width: 901px) {
-  .battle-room {
-    --hand-card-height: 204px;
-  }
-
   #stage {
     min-height: 634px;
     grid-template-columns: minmax(0, 1fr) 210px;

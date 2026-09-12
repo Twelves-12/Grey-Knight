@@ -1,5 +1,6 @@
-import { applyCardSigil } from "./card-icons.js";
+import { createCardWatermark } from "./card-icons.js";
 import { createCardRules } from "./card-rules.js";
+import { markText } from "./card-view.js";
 import { clamp, el } from "./utils.js";
 
 /**
@@ -56,7 +57,16 @@ export class CardTooltip {
       );
       const def = unit?.def ?? (side === "enemy" ? preview?.def : undefined);
       if (def) {
-        this.#show(unitCard, def, unit?.hp ?? def.health, side);
+        this.#show(
+          unitCard,
+          def,
+          unit?.hp ?? def.health,
+          side,
+          false,
+          unit ? battle.attackOf(unit, side) : def.attack,
+          unit?.maxHp ?? def.health,
+          unit,
+        );
 
         return;
       }
@@ -66,7 +76,17 @@ export class CardTooltip {
     if (handCard) {
       const def = battle.hand[Number(handCard.dataset.index)];
       if (def) {
-        this.#show(handCard, def, def.health, "player", true);
+        this.#show(
+          handCard,
+          def,
+          def.health,
+          "player",
+          true,
+          def.attack + (def.marks?.sharpen ?? 0),
+          def.health,
+          undefined,
+          battle.cardCost(def),
+        );
 
         return;
       }
@@ -81,19 +101,29 @@ export class CardTooltip {
    * @param {number} hp
    * @param {import("../types.js").Side} side
    * @param {boolean} [showCost]
+   * @param {number} [attack]
+   * @param {number} [maxHp]
+   * @param {import("../types.js").Unit} [unit]
+   * @param {number} [cost]
    */
-  #show(anchor, def, hp, side, showCost = false) {
+  #show(
+    anchor,
+    def,
+    hp,
+    side,
+    showCost = false,
+    attack = def.attack,
+    maxHp = def.health,
+    unit,
+    cost = def.cost,
+  ) {
     if (this.#anchor === anchor) {
       return;
     }
 
     this.hide();
     const tip = el("div", "tooltip-card");
-    const head = el("div", "tt-head");
-    const seal = el("div", "tt-seal");
-    applyCardSigil(seal, def);
-    head.append(seal);
-    const meta = el("div");
+    const meta = el("div", "tt-head");
     meta.append(el("div", "tt-name", def.name));
     if (def.nameEn) {
       meta.append(el("div", "tt-en", def.nameEn));
@@ -102,11 +132,25 @@ export class CardTooltip {
       el(
         "div",
         "tt-meta",
-        `${showCost ? `${def.cost} 圣力 · ` : ""}${def.attack}攻 · ${hp}/${def.health}血${side === "enemy" ? "（敌）" : ""}`,
+        `${def.faction ? `${def.faction} 种属 · ` : ""}${showCost ? `${cost} 圣力 · ` : ""}${def.type === "unit" ? `${attack}攻 · ${hp}/${maxHp}血` : { tactic: "战术", ritual: "仪式", enhancement: "强化" }[def.type]}${side === "enemy" ? "（敌）" : ""}`,
       ),
     );
-    head.append(meta);
-    tip.append(head);
+    if (unit) {
+      const states = [
+        unit.armor ? `护甲 ${unit.armor}` : "",
+        unit.sleep ? `沉睡 ${unit.sleep} 轮` : "",
+        unit.stunned ? "眩晕：跳过下次攻击" : "",
+        unit.marked ? `标记 ${unit.marked}` : "",
+        unit.frozen ? "冰冻" : "",
+      ].filter(Boolean);
+      if (states.length > 0) {
+        meta.append(el("div", "tt-meta", states.join(" · ")));
+      }
+    }
+    if (def.marks && Object.values(def.marks).some(Boolean)) {
+      meta.append(el("div", "tt-meta", `本场印记：${markText(def.marks)}`));
+    }
+    tip.append(createCardWatermark(def), meta);
     tip.append(createCardRules(def, side));
     if (def.flavor) {
       tip.append(el("div", "tt-flavor", `「${def.flavor}」`));

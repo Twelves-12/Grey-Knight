@@ -1,3 +1,5 @@
+import { el } from "./utils.js";
+
 /**
  * @param {HTMLElement} node
  * @param {import("../types.js").CardDef} def
@@ -6,6 +8,15 @@ export function applyCardSigil(node, def) {
   node.innerHTML =
     `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" ` +
     `stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">${def.icon}</svg>`;
+}
+
+/** @param {import("../types.js").CardDef} def */
+export function createCardWatermark(def) {
+  const watermark = el("span", "card-watermark");
+  watermark.setAttribute("aria-hidden", "true");
+  applyCardSigil(watermark, def);
+
+  return watermark;
 }
 
 const PLAQUE_MARKS = {

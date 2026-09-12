@@ -1,0 +1,20 @@
+.hand-card > .card-watermark,
+.tooltip-card > .card-watermark,
+.codex-card > .card-watermark {
+  position: absolute;
+  z-index: 0;
+  inset: 25% 6% auto auto;
+  display: block;
+  width: 88%;
+  height: 65%;
+  color: var(--card-accent, #dcc598);
+  opacity: 0.065;
+  pointer-events: none;
+  user-select: none;
+}
+
+.card-watermark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

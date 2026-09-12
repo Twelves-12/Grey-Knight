@@ -1,4 +1,17 @@
 export const CARD_ICONS = {
+  "refugee": `
+    <circle cx="32" cy="18" r="8"/>
+    <path d="M17,55 V42 C17,29 47,29 47,42 V55 M24,55 V43 M40,55 V43"/>
+    <path d="M22,30 L32,38 L42,30"/>`,
+  "shelter": `
+    <path d="M7,30 L32,8 L57,30 M14,25 V55 H50 V25"/>
+    <path d="M25,55 V38 H39 V55 M21,20 H43"/>`,
+  "life-oracle": `
+    <path d="M32,55 C14,43 8,34 12,23 C16,12 27,14 32,23 C37,14 48,12 52,23 C56,34 50,43 32,55 Z"/>
+    <path d="M21,34 H28 L32,26 L37,41 L41,34 H47"/>`,
+  "crown": `
+    <path d="M11,19 L22,31 L32,10 L42,31 L53,19 L47,49 H17 Z M17,55 H47"/>
+    <circle cx="11" cy="17" r="3"/><circle cx="32" cy="8" r="3"/><circle cx="53" cy="17" r="3"/>`,
   "scout": `
     <path d="M8,32 C17,20 47,20 56,32 C47,44 17,44 8,32 Z"/>
     <circle cx="32" cy="32" r="9.5"/>

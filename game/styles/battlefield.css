@@ -181,8 +181,44 @@
   align-items: center;
   justify-content: center;
   z-index: 2;
-  gap: clamp(12px, 3vw, 36px);
+  gap: clamp(8px, 1.5vw, 20px);
   min-height: 0;
+}
+
+.chain-source .card,
+.chain-target .card {
+  outline: 2px solid #f2d396;
+  box-shadow: 0 0 28px #e5ad59a8;
+}
+
+.chain-banner {
+  position: absolute;
+  z-index: 15;
+  top: 50%;
+  left: 50%;
+  padding: 8px 16px;
+  border: 1px solid #eac080;
+  background: #3d271cf2;
+  color: #ffe6af;
+  white-space: nowrap;
+  font: 700 14px var(--font-display);
+  transform: translate(-50%, -50%);
+  animation: chain-flash 0.6s ease-out both;
+}
+
+@keyframes chain-flash {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+  25%,
+  80% {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 .lane-cell {
@@ -350,6 +386,34 @@
   cursor: not-allowed;
 }
 
+.lane-cell.effect-target .card,
+.lane-cell.replacement-target .card {
+  outline: 2px solid #bbddab;
+  outline-offset: 3px;
+  cursor: pointer;
+}
+
+.lane-cell.replacement-target::before {
+  content: "替换";
+  position: absolute;
+  z-index: 9;
+  top: -16px;
+  width: 100%;
+  text-align: center;
+  color: #dbecbb;
+  font-size: 10px;
+  pointer-events: none;
+}
+
+.choosing-target .lane-cell:not(.effect-target) {
+  opacity: 0.55;
+}
+
+.lane-cell.effect-target.target .card {
+  outline-color: #ffe6a1;
+  box-shadow: 0 0 20px #f8d48d80;
+}
+
 .lane-cell.invalid-target::after {
   content: "×";
   position: absolute;
@@ -440,7 +504,20 @@
   border-top: 1px solid rgba(255, 107, 158, 0.26);
   border-bottom: 1px solid rgba(255, 107, 158, 0.18);
   text-shadow: 0 0 14px rgba(192, 67, 122, 0.65);
-  white-space: nowrap;
+  width: max-content;
+  max-width: 90%;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.55;
+}
+
+.lane-number {
+  position: absolute;
+  left: 0;
+  top: -15px;
+  color: #b4a58a;
+  font-size: 9px;
+  pointer-events: none;
 }
 
 .board:has(.ability-omen) .frontline {

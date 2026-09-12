@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grey Knight · 断桥抉择</title>
+    <title>Grey Knight · 旅途歇脚处</title>
     <link rel="stylesheet" href="/css/base.css" />
     <link rel="stylesheet" href="/css/theme.css" />
     <link rel="stylesheet" href="/css/site.css" />
@@ -14,69 +14,51 @@
       <site-header active="game"></site-header>
       <main class="site-scroll journey-page">
         <div class="journey-topline">
-          <a href="./story.html">← 灰烬之路</a>
-          <span>旅途事件 · 战斗之前</span>
+          <a href="./map.html">← 冒险地图</a>
+          <span>旅途中的片刻喘息</span>
         </div>
-        <header class="event-heading">
-          <span class="event-seal" aria-hidden="true">誓</span>
-          <p class="eyebrow">A CHOICE BEFORE THE DARK</p>
-          <h1 class="site-title">断桥上的余火</h1>
-          <p>
-            碎石下的人还活着，桥下的军号也没有被黑暗吞没。
-            <br />
-            你可以停下来，但每一次援手，都要付出一点代价。
-          </p>
-        </header>
-        <form
-          id="event-form"
-          class="event-form"
-          action="./battle.html"
-          method="get"
-        >
-          <fieldset>
-            <legend>你要怎么做？</legend>
-            <div id="event-choices" class="event-choices"></div>
-          </fieldset>
+        <section class="map-panel sheet event-panel">
+          <header class="event-heading">
+            <span id="event-seal" class="event-seal" aria-hidden="true">
+              途
+            </span>
+            <p class="eyebrow">REST · REFINE · REBUILD</p>
+            <h1 id="event-title" class="site-title"></h1>
+            <p id="event-description"></p>
+          </header>
+          <div
+            id="event-status"
+            class="resource-bar"
+            aria-label="冒险资源"
+          ></div>
           <section
-            id="event-outcome"
-            class="event-outcome sheet"
+            id="event-notice"
+            role="status"
             aria-live="polite"
+            tabindex="-1"
             hidden
-          >
-            <p id="event-aftermath"></p>
-            <div class="outcome-stats">
-              <span>
-                开局生命
-                <b id="event-health"></b>
-              </span>
-              <span>
-                牌库
-                <b id="event-deck"></b>
-              </span>
+          ></section>
+          <div class="action-section-heading">
+            <div>
+              <h2 id="event-action-title">选择行动</h2>
+              <p id="event-action-hint"></p>
             </div>
-            <p class="event-note">
-              加入的卡牌会一起洗入牌库，不保证出现在起手牌中。
-            </p>
-          </section>
-          <div class="event-actions">
-            <span>选择后，可在出发前更改。</span>
-            <button
-              id="event-continue"
-              class="btn primary"
-              type="submit"
-              disabled
-            >
-              进入战斗 →
+          </div>
+          <section
+            id="event-actions"
+            class="service-options"
+            aria-label="旅途行动"
+          ></section>
+          <div class="map-actions">
+            <button id="event-continue" class="btn primary" type="button">
+              离开此处，继续前行 →
             </button>
           </div>
-        </form>
-        <noscript>
-          <p>
-            请启用 JavaScript 来选择事件，或
-            <a href="./battle.html">直接进入普通战斗</a>
-            。
-          </p>
-        </noscript>
+          <details id="event-deck" class="service-deck deck-disclosure">
+            <summary id="event-deck-summary">查看冒险牌组</summary>
+            <div id="event-deck-list" class="deck-ledger"></div>
+          </details>
+        </section>
       </main>
     </div>
     <script type="module" src="/game/entry.js"></script>

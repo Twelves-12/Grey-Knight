@@ -58,6 +58,9 @@
               <div class="lane-cell" data-col="3" data-side="enemy">
                 <div class="slot"></div>
               </div>
+              <div class="lane-cell" data-col="4" data-side="enemy">
+                <div class="slot"></div>
+              </div>
             </div>
             <div class="lanes">
               <div class="lane-cell" data-col="0" data-side="player">
@@ -70,6 +73,9 @@
                 <div class="slot"></div>
               </div>
               <div class="lane-cell" data-col="3" data-side="player">
+                <div class="slot"></div>
+              </div>
+              <div class="lane-cell" data-col="4" data-side="player">
                 <div class="slot"></div>
               </div>
             </div>
@@ -120,7 +126,10 @@
               </button>
             </nav>
           </div>
-          <div class="energy-cluster" title="每回合重燃，用于召唤单位">
+          <div
+            class="energy-cluster"
+            title="每轮恢复 3 点圣力；部署、移动、征调和行动牌共享圣力"
+          >
             <span class="energy-label">圣力</span>
             <div class="candles">
               <div class="candle"></div>
@@ -132,6 +141,65 @@
               <span id="energy-max">/ 3</span>
             </div>
           </div>
+          <div class="battle-actions">
+            <div
+              class="direction-actions"
+              role="group"
+              aria-label="选择战线结算方向"
+            >
+              <button
+                class="btn"
+                type="button"
+                data-direction="left"
+                title="从左向右结算战线"
+              >
+                左 → 右
+              </button>
+              <button
+                class="btn"
+                type="button"
+                data-direction="right"
+                title="从右向左结算战线"
+              >
+                左 ← 右
+              </button>
+            </div>
+            <button id="recruit" class="btn" type="button">
+              征调 · 1 圣力
+            </button>
+            <button id="invoke-oath" class="btn" type="button" hidden>
+              发动誓约
+            </button>
+            <button id="issue-order" class="btn primary" type="button" disabled>
+              军令 · 选择手牌
+            </button>
+            <div id="unit-actions" class="selection-actions" hidden>
+              <button class="btn" type="button" data-move="-1">← 移动</button>
+              <button class="btn" type="button" data-move="1">移动 →</button>
+            </div>
+          </div>
+          <div id="battle-status" class="battle-status" role="status"></div>
+          <button
+            id="enemy-deck-toggle"
+            class="enemy-deck-toggle"
+            type="button"
+            aria-label="查看敌方牌库"
+            aria-haspopup="dialog"
+            aria-controls="enemy-deck-dialog"
+            disabled
+          >
+            <span>
+              敌方牌库
+              <span aria-hidden="true">↗</span>
+            </span>
+            <small id="enemy-deck-summary">查看卡牌与增援安排</small>
+          </button>
+          <details class="encounter-brief">
+            <summary>敌方战法</summary>
+            <p id="encounter-rule"></p>
+          </details>
+          <p id="target-prompt" class="target-prompt" role="status" hidden></p>
+          <div id="action-choices" class="action-choices"></div>
           <div class="command-reserve">
             <div class="oath-emblem">
               <svg
@@ -162,7 +230,7 @@
             <small>结算所有列位 · E</small>
           </button>
           <button id="skip-battle" class="btn ghost" type="button">
-            跳过战斗
+            返回冒险地图
           </button>
         </aside>
       </main>

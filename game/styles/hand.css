@@ -62,7 +62,7 @@
 
 .hand .card {
   position: relative;
-  flex: 0 0 clamp(122px, 10.1vw, 148px);
+  flex: 0 0 clamp(160px, 11.7vw, 176px);
   min-width: 0;
   inset: auto;
   cursor: grab;
@@ -70,17 +70,8 @@
 }
 
 .card.hand-card {
-  --seal-size: 56px;
   height: var(--hand-card-height);
   min-height: 0;
-}
-
-.hand-card .c-seal::after {
-  width: calc(var(--seal-size) * 1.4);
-  height: calc(var(--seal-size) * 0.94);
-  border-style: solid;
-  border-radius: 50% 50% 3px 3px;
-  background: linear-gradient(180deg, #b6a2650b, transparent);
 }
 
 .hand .card:not(.disabled, .selected):hover {
@@ -98,37 +89,52 @@
 .hand-card .c-heading {
   justify-content: start;
   gap: 7px;
-  min-height: 44px;
-  padding: 0 2px 3px;
+  min-height: 36px;
+  padding: 0 2px 5px;
 }
 
 .hand-card .c-name {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
   text-align: left;
 }
 
-.hand-card .c-seal {
-  flex: 1 1 56px;
+.hand-card .c-cost {
+  flex-basis: 30px;
+  grid-template-areas: "num" "label";
+  grid-template-columns: 1fr;
+  height: 34px;
+  margin: 0;
+  padding: 3px;
+  clip-path: none;
+  border-radius: 2px;
+}
+
+.hand-card .c-cost .mark {
+  display: none;
+}
+
+.hand-card .c-cost .num {
+  font-size: 22px;
 }
 
 .hand-card .card-rules {
-  flex: 0 0 68px;
+  align-content: start;
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
-  margin: 2px 0 6px;
-  padding: 7px 6px 6px;
-  border-top: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
-  background: linear-gradient(180deg, #0b100d18, #0b100d66);
-  color: #ded6bf;
-  font-size: 10.5px;
+  margin: 3px 0 4px;
+  padding: 5px 4px;
+  gap: 9px;
+  color: #ede3cd;
+  font-size: 11.5px;
 }
 
 .hand-card .rule-tag {
   color: #c5a574;
   font-size: 8px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.03em;
 }
 
 .hand-card .rule-tag::after {
@@ -145,11 +151,36 @@
 }
 
 .hand-card .card-inscription {
-  padding-inline: 3px;
-  color: #b2a88d;
-  font-size: 10px;
-  text-align: center;
+  color: inherit;
+  font-family: var(--font-sans);
+  font-size: inherit;
+  line-height: 1.55;
+  text-align: left;
   text-wrap: pretty;
+}
+
+.hand-card .stat {
+  grid-template-areas: "label num";
+  grid-template-columns: auto auto;
+  grid-template-rows: 24px;
+  column-gap: 7px;
+  padding: 1px 2px;
+}
+
+.hand-card .stat .mark {
+  display: none;
+}
+
+.hand-card .stat .num {
+  font-size: 24px;
+}
+
+.hand-card .stat-label {
+  font-size: 9px;
+}
+
+.hand-card .c-cost .stat-label {
+  font-size: 8px;
 }
 
 .hand .card:active {
@@ -179,34 +210,20 @@
   }
 
   .hand .card {
-    flex-basis: 122px;
-  }
-
-  .card.hand-card {
-    --seal-size: 37px;
-  }
-
-  .hand-card .c-seal {
-    flex-basis: 38px;
+    flex-basis: 160px;
   }
 
   .hand-card .c-heading {
-    min-height: 39px;
     gap: 5px;
   }
 
-  .hand-card .c-cost {
-    flex-basis: 32px;
-    height: 41px;
-  }
-
   .hand-card .c-name {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .hand-card .card-rules {
-    flex-basis: 64px;
-    padding-block: 5px;
+    gap: 6px;
+    padding-block: 3px;
     margin-bottom: 4px;
   }
 }
@@ -217,6 +234,6 @@
   }
 
   .hand .card {
-    flex-basis: 128px;
+    flex-basis: 160px;
   }
 }

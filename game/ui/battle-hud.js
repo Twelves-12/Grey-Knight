@@ -1,5 +1,5 @@
 import { $, $$ } from "../../js/dom.js";
-import { ENERGY_MAX } from "../game/rules.js";
+import { getMapNode } from "../content/map.js";
 
 /** @typedef {import("../types.js").Side} Side */
 
@@ -50,21 +50,65 @@ export class BattleHud {
    * @param {boolean} blocked
    */
   sync(battle, blocked) {
-    $("#enemy-sub", this.#stage).textContent = battle.encounter.status;
+    const deck = battle.enemyDeck;
+    const remaining =
+      deck.planned.length +
+      deck.pending.length +
+      deck.waves.reduce((count, wave) => count + wave.cards.length, 0);
+    $("#enemy-sub", this.#stage).textContent =
+      battle.encounter.mode === "battle" && !deck.recurring
+        ? `待出增援 ${remaining}`
+        : battle.encounter.status;
+    $("#enemy-deck-summary", this.#stage).textContent =
+      `${deck.cards.length} 种 · ${deck.recurring ? "持续增援" : `待出 ${remaining} 张`}`;
+    $("#encounter-rule", this.#stage).textContent = battle.encounter.rule;
     $("#round-number", this.#stage).textContent = String(battle.round);
     for (const [index, candle] of this.#candles.entries()) {
       candle.classList.toggle("lit", index < battle.energy);
+      candle.classList.toggle("locked", index >= battle.maxEnergy);
     }
     $("#energy-number", this.#stage).textContent = String(battle.energy);
-    $("#energy-max", this.#stage).textContent = ` / ${ENERGY_MAX}`;
-    $("#player-sub", this.#stage).textContent = `牌库 ${battle.drawCount}`;
+    $("#energy-max", this.#stage).textContent = ` / ${battle.maxEnergy}`;
+    $("#player-sub", this.#stage).textContent =
+      `牌库 ${battle.drawCount} · 弃牌 ${battle.discardCount}`;
 
     const canAct = !blocked && battle.phase === "player";
+    $("#enemy-deck-toggle", this.#stage).disabled = !canAct;
+    const leave = $("#skip-battle", this.#stage);
+    leave.disabled = !canAct;
+    leave.textContent =
+      new URLSearchParams(location.search).get("node") === "node-5"
+        ? "离开战场，作出抉择"
+        : "返回冒险地图";
     const canDeploy =
       canAct &&
-      battle.playerBoard.some((unit) => !unit) &&
-      battle.hand.some((card) => card.cost <= battle.energy);
+      battle.hand.some(
+        (card, index) =>
+          battle.cardCost(card) <= battle.energy &&
+          battle.playerBoard.some((_, col) => battle.canDeploy(index, col)),
+      );
     this.#stage.classList.toggle("can-deploy", canDeploy);
+    const recruit = $("#recruit", this.#stage);
+    recruit.disabled = !canAct || battle.recruited || battle.hand.length >= 7;
+    recruit.textContent = battle.recruited
+      ? "征调 · 本轮已用"
+      : battle.requisitionCost === 0
+        ? "征调 · 免费"
+        : `征调 · ${battle.requisitionCost} 圣力`;
+    for (const button of $$("[data-direction]", this.#stage)) {
+      button.disabled = !canAct;
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.direction === battle.direction),
+      );
+    }
+    const oath = $("#invoke-oath", this.#stage);
+    oath.hidden = !["fate", "immolation"].includes(battle.oath);
+    oath.disabled = !canAct || (battle.oath === "fate" && battle.oathUsed);
+    oath.textContent =
+      battle.oath === "fate" ? "篡命誓约 · 交换意图" : "焚身誓约 · 生命换圣力";
+    $("#battle-status", this.#stage).textContent =
+      `军令：${battle.commandUsed ? "本轮已用" : "可用"} · 移动：${battle.moved ? "本轮已用" : "可用"}\n${battle.ritualDamage ? `圣印仪式：每轮 ${battle.ritualDamage} 伤害\n` : ""}${battle.oath ? `誓约：${{ immolation: "焚身", dawn: "晨钟", fate: "篡命" }[battle.oath]}` : "击杀且存活：下一列本轮 +1 攻击"}`;
     const endTurn = $("#end-turn", this.#stage);
     endTurn.disabled = !canAct;
     endTurn.classList.toggle("attract", canAct && !canDeploy);
@@ -87,16 +131,8 @@ export class BattleHud {
     const encounter = battle.encounter;
     const { enemy, player } = this.#heroes;
     const nodeId = new URLSearchParams(location.search).get("node") ?? "node-1";
-    const chapterLabels = {
-      "node-1": "第一章 · 东疆剿匪，心生疑云",
-      "node-2": "第二章 · 账簿露秘，祸起高堂（查账线）",
-      "node-3": "第三章 · 同袍无踪，荒冢无名（查账线）",
-      "node-4": "第四章 · 匪首落定，密诏昭然（查账线）",
-      "node-6": "第六章 · 真相大白（查账线）",
-      "rebel-2": "第二章 · 边境异动，蛮族南侵（叛徒线）",
-    };
     $("#battle-node-banner", this.#stage).textContent =
-      chapterLabels[nodeId] ?? "章节战斗";
+      getMapNode(nodeId)?.title ?? "章节战斗";
     enemy.seal.textContent = encounter.hero.glyph;
     $("#enemy-name", this.#stage).textContent =
       `${encounter.hero.name} ${encounter.hero.nameEn}`;

@@ -1,91 +1,99 @@
-import { MAP_NODES, getMapNode } from "../game/content/map.js";
+import { getMapNode } from "../game/content/map.js";
+import { AbyssFront } from "../game/encounters/battlefield.js";
+import { getNodeEntry, getRun, requireCampaignNode } from "../game/session.js";
+import { element, icon, renderRunStatus, sceneArt } from "./journey-ui.js";
 
 const params = new URLSearchParams(location.search);
-const openingScene = !params.has("node");
-const nodeId = params.get("node") ?? "node-1";
-const node = getMapNode(nodeId);
-
-const passagesRoot = document.querySelector("#story-passages");
-const progress = document.querySelector("#story-progress");
-const back = document.querySelector("#story-back");
-const next = document.querySelector("#story-next");
-const enter = document.querySelector("#story-enter");
-const skip = document.querySelector("#story-skip");
-const label = document.querySelector("#story-topline-label");
-
-if (label) {
-  label.textContent = openingScene ? "第一章 · 匪寨外围" : node.storyTitle;
-}
-if (skip) {
-  skip.href = `./battle.html?node=${encodeURIComponent(node.id)}`;
-}
-
-const passages = openingScene
-  ? [
-      "行军三日，阿尔德里克率小队抵达匪患最烈的黑石岭。斥候回报：匪众约三四十人，盘踞旧矿洞，粮草不继，士气涣散。",
-      "他勒马立于山脊，俯瞰下方寨栅。风吹过枯草，卷起尘土。隐约能听见寨中有人争吵。",
-      "“白日列阵，堂堂正正攻进去。我要看看，这帮人凭什么敢劫公爵的粮仓。”",
-    ]
-  : node.story ?? [
-      "节点剧情1：这里还没有写实装内容。",
-      "节点剧情2：这里还没有写实装内容。",
-      "节点剧情3：这里还没有写实装内容。",
-    ];
-
-const fragment = document.createDocumentFragment();
-for (const [index, paragraph] of passages.entries()) {
-  const section = document.createElement("section");
-  section.className = "story-passage";
-  if (index !== 0) {
-    section.hidden = true;
+const nodeId = params.get("node") ?? getRun().progress.current;
+if (getMapNode(nodeId) && !getMapNode(nodeId).story) {
+  location.replace(getNodeEntry(nodeId));
+} else if (requireCampaignNode(nodeId)) {
+  const node = getMapNode(nodeId);
+  const run = getRun();
+  const root = document.querySelector("#story-passages");
+  const back = document.querySelector("#story-back");
+  const next = document.querySelector("#story-next");
+  const enter = document.querySelector("#story-enter");
+  const progress = document.querySelector("#story-progress");
+  const meter = document.querySelector("#story-meter");
+  const encounter = new AbyssFront(run.seed, { nodeId, choices: run.choices });
+  const destination = `./battle.html?node=${encodeURIComponent(node.id)}`;
+  document.title = `Grey Knight · ${node.label}`;
+  document.querySelector("#story-topline-label").textContent = node.chapter
+    ? `第 ${node.chapter} 章 · ${node.label}`
+    : node.label;
+  document.querySelector("#story-eyebrow").textContent =
+    node.subtitle ??
+    (node.kind === "elite" ? "精英遭遇 · 战具奖励" : "沿途遭遇 · 构筑你的队伍");
+  document.querySelector(".story-scene").prepend(sceneArt(node.kind));
+  document.querySelector("#story-location").textContent =
+    node.location ?? node.label;
+  renderRunStatus(document.querySelector("#story-run-status"), run);
+  document.querySelector("#story-brief-icon").append(icon(node.kind));
+  document.querySelector("#story-brief-title").textContent =
+    encounter.hero.name;
+  document.querySelector("#story-encounter-rule").textContent = encounter.rule;
+  const encounterStats = document.querySelector("#story-encounter-stats");
+  for (const text of [
+    node.kind === "peaceful" ? "非敌对" : `敌方圣焰 ${encounter.maxHealth}`,
+    encounter.status,
+  ]) {
+    encounterStats.append(element("span", "encounter-badge", text));
   }
-
-  const title = document.createElement("h1");
-  title.className = "site-title";
-  title.tabIndex = -1;
-  title.textContent = openingScene
-    ? `匪寨外围 · 剧情${index + 1}`
-    : `${node.label} · 剧情${index + 1}`;
-
-  const isDialogue = paragraph.trim().startsWith("“");
-  const p = document.createElement(isDialogue ? "blockquote" : "p");
-  p.textContent = paragraph;
-
-  section.append(title, p);
-  fragment.append(section);
-}
-passagesRoot?.append(fragment);
-
-const storyPassages = [...document.querySelectorAll(".story-passage")];
-let current = 0;
-
-function renderPassage() {
-  for (const [index, passage] of storyPassages.entries()) {
-    passage.hidden = index !== current;
+  const skip = document.querySelector("#story-skip");
+  skip.href = destination;
+  skip.textContent =
+    node.kind === "peaceful"
+      ? "直接走进庙宇 →"
+      : node.kind === "duel"
+        ? "直接开始决斗 →"
+        : "直接前往战场 →";
+  enter.href = destination;
+  enter.textContent =
+    node.kind === "peaceful"
+      ? "走进庙宇 →"
+      : node.kind === "duel"
+        ? "开始决斗 →"
+        : `迎战${encounter.hero.name} →`;
+  document.querySelector("#story-destination").textContent =
+    node.kind === "peaceful"
+      ? "下一步：走进庙宇。你可以直接拒绝军令，也可以下令进攻。"
+      : node.kind === "duel"
+        ? "下一步：酒馆决斗。交锋结束后，再决定骑士的命运。"
+        : `下一步：${node.label}战场。胜利后处理战利品${node.choices?.length ? "与剧情抉择" : ""}。`;
+  for (const [index, text] of node.story.entries()) {
+    const section = document.createElement("section");
+    section.className = "story-passage";
+    const heading = document.createElement("h1");
+    heading.className = "site-title";
+    heading.tabIndex = -1;
+    heading.textContent = index === 0 ? node.title : node.label;
+    const paragraph = document.createElement("p");
+    paragraph.textContent = text;
+    section.append(heading, paragraph);
+    root.append(section);
   }
-
-  back.disabled = current === 0;
-  next.hidden = current === storyPassages.length - 1;
-  enter.hidden = !next.hidden;
-  progress.textContent = `${String(current + 1).padStart(2, "0")} / ${String(storyPassages.length).padStart(2, "0")}`;
-
-  const active = storyPassages[current];
-  active?.querySelector("h1")?.focus({ preventScroll: true });
-
-  if (enter.hidden === false) {
-    enter.textContent = "进入战斗 →";
-    enter.href = `./battle.html?node=${encodeURIComponent(node.id)}`;
+  let current = 0;
+  function show() {
+    for (const [index, passage] of [...root.children].entries()) {
+      passage.hidden = index !== current;
+    }
+    back.disabled = current === 0;
+    next.hidden = current === root.children.length - 1;
+    enter.hidden = !next.hidden;
+    progress.textContent = `剧情 ${current + 1} / ${root.children.length}${next.hidden ? " · 已读至末段" : ""}`;
+    meter.max = root.children.length;
+    meter.value = current + 1;
+    next.textContent = `阅读第 ${current + 2} 段 →`;
+    root.children[current].querySelector("h1").focus({ preventScroll: true });
   }
+  back.addEventListener("click", () => {
+    current -= 1;
+    show();
+  });
+  next.addEventListener("click", () => {
+    current += 1;
+    show();
+  });
+  show();
 }
-
-back?.addEventListener("click", () => {
-  current -= 1;
-  renderPassage();
-});
-
-next?.addEventListener("click", () => {
-  current += 1;
-  renderPassage();
-});
-
-renderPassage();

@@ -1,0 +1,355 @@
+.enemy-deck {
+  width: min(1040px, calc(100vw - 32px));
+  max-width: none;
+  max-height: min(900px, calc(100dvh - 40px));
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #8f697a;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #251e29, #111217 65%);
+  color: #e2d6d2;
+  box-shadow: 0 24px 100px #000b;
+  font-family: var(--font-sans);
+  color-scheme: dark;
+}
+
+.enemy-deck[open] {
+  display: flex;
+  flex-direction: column;
+  animation: enemy-deck-in 150ms ease-out;
+}
+
+.enemy-deck::backdrop {
+  background: #08090ddd;
+  backdrop-filter: blur(5px);
+}
+
+.enemy-deck-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #96788445;
+  background: #211b24;
+}
+
+.enemy-deck-header h2 {
+  margin: 0;
+  color: #f0d4d9;
+  font: 600 clamp(20px, 3vw, 26px) var(--font-display, serif);
+  letter-spacing: 0.12em;
+}
+
+.enemy-deck-close {
+  min-width: 76px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #a482915e;
+  border-radius: 4px;
+  background: #322732;
+  color: #f3dce0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.enemy-deck-close:hover {
+  border-color: #c994a9;
+  background: #46303e;
+}
+
+.enemy-deck :is(button, summary):focus-visible {
+  outline: 2px solid #edc09a;
+  outline-offset: 3px;
+}
+
+.enemy-deck-body {
+  min-height: 0;
+  padding: 20px 24px 28px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #846373 #17141b;
+  scrollbar-width: thin;
+}
+
+.enemy-deck-body:focus-visible {
+  outline: 2px solid #edc09a;
+  outline-offset: -3px;
+}
+
+.enemy-deck-intro,
+.enemy-deck-footnote {
+  margin: 0 0 18px;
+  color: #b8a9b2;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.enemy-deck-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.enemy-deck-stat {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 14px;
+  border: 1px solid #96788440;
+  border-radius: 4px;
+  background: #372b353d;
+}
+
+.enemy-deck-stat > span {
+  color: #c5a6b4;
+  font-size: 12px;
+}
+
+.enemy-deck-stat > strong {
+  color: #f0d9d5;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.enemy-deck-stat > small {
+  color: #ae9da8;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.enemy-deck-notice {
+  padding: 12px 16px;
+  border-left: 3px solid #baa583;
+  background: #a9905620;
+  color: #deceb0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.enemy-deck-section-title {
+  margin: 24px 0 12px;
+  color: #d9c1ca;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.enemy-deck-schedule {
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.enemy-deck-schedule-row,
+.enemy-deck-details,
+.enemy-deck-recurring {
+  padding: 10px 14px;
+  border: 1px solid #96788435;
+  background: #080b1152;
+}
+
+.enemy-deck-schedule-row + *,
+.enemy-deck-details + *,
+.enemy-deck-recurring + * {
+  margin-top: 8px;
+}
+
+.enemy-deck-schedule p {
+  margin: 5px 0;
+  color: #c7b6c0;
+}
+
+.enemy-deck-details summary {
+  min-height: 32px;
+  padding-block: 5px;
+  color: #e1c5cc;
+  cursor: pointer;
+}
+
+.enemy-deck-wave-list {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.enemy-deck-wave-list li {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.enemy-deck-cycle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin: 12px 0 4px;
+  padding-left: 20px;
+  color: #e3cbd4;
+}
+
+.enemy-deck-cycle li {
+  padding: 5px 8px;
+  border: 1px solid #8f677757;
+  border-radius: 3px;
+  background: #432e3b52;
+}
+
+.enemy-deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  align-items: stretch;
+  gap: 14px;
+}
+
+.enemy-deck-card {
+  position: relative;
+  min-width: 0;
+  padding: 18px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid #93717e70;
+  border-radius: 5px;
+  background: linear-gradient(140deg, #362b34, #1c1c24);
+}
+
+.enemy-deck-card > :not(.card-watermark) {
+  position: relative;
+  z-index: 1;
+}
+
+.enemy-deck-card > .card-watermark {
+  position: absolute;
+  z-index: 0;
+  top: 24%;
+  right: 5%;
+  width: 88%;
+  height: 65%;
+  opacity: 0.065;
+  color: #e7b5c8;
+  pointer-events: none;
+  user-select: none;
+}
+
+.enemy-deck-card .card-watermark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.enemy-deck-faction {
+  color: #bb98a9;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.enemy-deck-card h4 {
+  margin: 7px 0 14px;
+  color: #f0dce0;
+  font: 600 18px var(--font-display, serif);
+  line-height: 1.5;
+}
+
+.enemy-deck-card-stats,
+.enemy-deck-card-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.enemy-deck-card-stats {
+  margin-bottom: 12px;
+  color: #e6c9bc;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.enemy-deck-card-stats span + span {
+  margin-left: 12px;
+}
+
+.enemy-deck-card-status > span {
+  padding: 3px 7px;
+  border: 1px solid #9d81934d;
+  border-radius: 3px;
+  color: #bdacb6;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.enemy-deck-card-status .on-board {
+  border-color: #ba7e8a80;
+  background: #9954632e;
+  color: #edbbc9;
+}
+
+.enemy-deck-card-status .is-planned {
+  border-color: #c3a27080;
+  color: #efca8c;
+}
+
+.enemy-deck-card-status .is-recurring {
+  color: #c5b0e2;
+}
+
+.enemy-deck-card .card-rules {
+  display: block;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #b995a130;
+  overflow: visible;
+  max-height: none;
+}
+
+.enemy-deck-card .card-inscription {
+  margin: 0;
+  color: #dfd0d6;
+  font-size: 13px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+@keyframes enemy-deck-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .enemy-deck {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 20px);
+  }
+  .enemy-deck-header {
+    padding: 12px 16px;
+  }
+  .enemy-deck-body {
+    padding: 16px;
+  }
+  .enemy-deck-overview {
+    gap: 6px;
+  }
+  .enemy-deck-stat {
+    padding: 10px;
+  }
+  .enemy-deck-stat > strong {
+    font-size: 21px;
+  }
+  .enemy-deck-wave-list li {
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enemy-deck[open] {
+    animation: none;
+  }
+}

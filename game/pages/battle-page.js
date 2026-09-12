@@ -1,12 +1,16 @@
-// TODO: 整个文件都需要重构。目前只是一个纯战斗demo，之后要跟随不同关卡和剧情变更
+import {
+  clearBattleState,
+  recordBattleResult,
+  saveBattleState,
+} from "../session.js";
 import { BattleView } from "../ui/battle-view.js";
-import { getProfile, setProfile } from "../kv.js";
 
 /**
  * @typedef {{
  *   audio: import("../audio/audio.js").GameAudio;
  *   createBattle: (seed: number) => import("../game/battle.js").Battle;
  *   seed?: number;
+ *   nodeId?: string;
  * }} BattlePageOptions
  */
 
@@ -19,21 +23,6 @@ export class BattlePage {
   // 模型进入玩家回合时，动画可能还没播完，这个锁得单独留着。
   #busy = true;
   #view;
-
-  #nextNodeId() {
-    if (this.#nodeId === "node-1") {
-      return getProfile().branch === "traitor" ? "rebel-2" : "node-2";
-    }
-    return this.#nodeId === "node-4"
-      ? "node-6"
-      : this.#nodeId === "rebel-2"
-        ? "rebel-3"
-        : this.#nodeId === "rebel-3"
-          ? "rebel-4"
-          : this.#nodeId === "rebel-4"
-            ? "rebel-5"
-            : `node-${Math.min(Number(this.#nodeId.replace("node-", "")) + 1, 6)}`;
-  }
 
   /**
    * @param {HTMLElement} room
@@ -51,6 +40,7 @@ export class BattlePage {
         getBattle: () => this.#battle,
         canAct: this.#canAct,
         play: this.#tryPlay,
+        action: this.#tryAction,
         endTurn: this.#requestEndTurn,
         restart: this.#restart,
         skipBattle: this.#skipBattle,
@@ -83,8 +73,16 @@ export class BattlePage {
     this.#busy = false;
     this.#view.ready(this.#battle);
 
-    if (this.#battle.winner === "player") {
-      this.#finishBattleIfNeeded();
+    if (this.#battle.winner) {
+      this.#finishBattle(
+        this.#battle.winner === "player"
+          ? "victory"
+          : this.#battle.winner === "enemy"
+            ? "defeat"
+            : "draw",
+      );
+    } else if (this.#battle.phase === "player") {
+      saveBattleState(this.#nodeId, this.#battle.snapshot);
     }
   }
 
@@ -98,19 +96,17 @@ export class BattlePage {
   };
 
   #skipBattle = () => {
-    const profile = getProfile();
-    const progress = profile.progress ?? {};
-    const unlocked = new Set(progress.unlocked ?? ["node-1"]);
-    const nextNode = this.#nextNodeId();
-    unlocked.add(nextNode);
-    setProfile({
-      ...profile,
-      progress: {
-        current: nextNode,
-        unlocked: [...unlocked],
-      },
-    });
-    location.href = `/game/settlement.html?node=${encodeURIComponent(this.#nodeId)}&skip=1`;
+    if (this.#busy) {
+      return;
+    }
+    if (this.#nodeId === "node-5") {
+      this.#finishBattle("peaceful");
+
+      return;
+    }
+    saveBattleState(this.#nodeId, this.#battle.snapshot);
+    this.#ac.abort();
+    location.href = "/game/map.html";
   };
 
   /**
@@ -119,17 +115,31 @@ export class BattlePage {
    * @param {import("../ui/card-motion.js").DraggedCard} [drag]
    * @returns {import("../types.js").PlayResult}
    */
-  #tryPlay = (index, col, drag) => {
+  #tryPlay = (index, col, drag, target) => {
     if (this.#busy) {
       return { ok: false, reason: "phase" };
     }
-    const result = this.#battle.playCard(index, col);
+    const result = this.#battle.playCard(index, col, target);
     if (result.ok === false) {
       return result;
     }
 
     this.#busy = true;
-    this.#deploy(index, col, this.#ac.signal, drag);
+    this.#deploy(index, col, result.unit, this.#ac.signal, drag);
+
+    return result;
+  };
+
+  #tryAction = (action, options) => {
+    if (!this.#canAct()) {
+      return { ok: false, reason: "phase" };
+    }
+    const result = this.#battle.act(action, options);
+    if (result.ok === false) {
+      return result;
+    }
+    this.#busy = true;
+    this.#runResolution();
 
     return result;
   };
@@ -137,11 +147,12 @@ export class BattlePage {
   /**
    * @param {number} index
    * @param {number} col
+   * @param {import("../types.js").DisplayUnit} unit
    * @param {AbortSignal} signal
    * @param {import("../ui/card-motion.js").DraggedCard} [drag]
    */
-  async #deploy(index, col, signal, drag) {
-    await this.#view.deploy(this.#battle, index, col, signal, drag);
+  async #deploy(index, col, unit, signal, drag) {
+    await this.#view.deploy(this.#battle, index, col, unit, signal, drag);
     if (!signal.aborted) {
       await this.#runResolution();
     }
@@ -151,31 +162,20 @@ export class BattlePage {
     this.#ac.abort();
     this.#ac = new AbortController();
     this.#busy = true;
+    clearBattleState();
     this.#battle = this.#nextBattle();
     this.#view.startBattle(this.#battle);
     this.#runResolution();
   };
 
-  #finishBattleIfNeeded() {
-    if (this.#battle.winner === "player") {
-      this.#handleVictoryTransition();
-    }
-  }
-
-  #handleVictoryTransition() {
-    const profile = getProfile();
-    const progress = profile.progress ?? {};
-    const unlocked = new Set(progress.unlocked ?? ["node-1"]);
-    const nextNode = this.#nextNodeId();
-    unlocked.add(nextNode);
-    setProfile({
-      ...profile,
-      progress: {
-        current: nextNode,
-        unlocked: [...unlocked],
-      },
+  #finishBattle(result) {
+    this.#ac.abort();
+    this.#busy = true;
+    recordBattleResult(this.#nodeId, result, {
+      health: this.#battle.player.health,
+      growth: this.#battle.growth,
     });
-    location.href = `/game/settlement.html?node=${encodeURIComponent(this.#nodeId)}&result=victory`;
+    location.href = `/game/settlement.html?node=${encodeURIComponent(this.#nodeId)}`;
   }
 
   #nextBattle() {
