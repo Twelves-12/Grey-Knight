@@ -8,6 +8,14 @@ import { MAP_ROUTES, getMapNode } from "./content/map.js";
 import { GREY_KNIGHT } from "./content/player.js";
 import { Random } from "./game/random.js";
 import * as kv from "./kv.js";
+import {
+  initAchievements,
+  checkBattleAchievements,
+  checkStoryAchievements,
+  checkEndingAchievements,
+  checkCollectionAchievements,
+  checkSpendingAchievements,
+} from "./achievements.js";
 
 export const GAME_PAGES = {
   "/game/story": "../js/story.js",
@@ -18,6 +26,7 @@ export const GAME_PAGES = {
   "/game/map": "../js/map.js",
   "/game/settlement": "../js/settlement.js",
   "/game/cards": "../js/cards.js",
+  "/game/records": "../js/records.js",
   "/game/rules": null,
 };
 
@@ -30,6 +39,7 @@ const CHOICE_KEYS = {
 };
 
 function newRun(seed = crypto.getRandomValues(new Uint32Array(1))[0]) {
+  initAchievements();
   const run = {
     version: 1,
     seed,
@@ -101,6 +111,25 @@ export const getRun = () => getCampaign().run;
 
 export function startNewCampaign(seed) {
   const profile = getCampaign();
+  if (profile.run && !profile.run.ending && Object.keys(profile.run.records).length > 0) {
+    profile.pastRuns = [
+      {
+        finishedAt: new Date().toISOString(),
+        seed: profile.run.seed,
+        ending: "abandoned",
+        endingTitle: "中途放弃",
+        path: profile.run.progress.completed,
+        summary: {
+          battlesWon: Object.values(profile.run.records).filter(r => r.result === "victory").length,
+          finalDeckSize: profile.run.deck.length,
+          relicsFound: profile.run.relics.length,
+          oath: profile.run.oath,
+        },
+        choices: { ...profile.run.choices },
+      },
+      ...(profile.pastRuns ?? []),
+    ];
+  }
   profile.run = newRun(seed);
 
   return save(profile);
@@ -212,6 +241,27 @@ function unlock(profile, id, side = "player") {
 function endRun(profile, ending) {
   profile.run.ending = ending;
   profile.endings = [...new Set([...(profile.endings ?? []), ending])];
+
+  const run = profile.run;
+  profile.pastRuns = [
+    {
+      finishedAt: new Date().toISOString(),
+      seed: run.seed,
+      ending,
+      endingTitle: ending,
+      path: run.progress.completed,
+      summary: {
+        battlesWon: Object.values(run.records).filter(r => r.result === "victory").length,
+        finalDeckSize: run.deck.length,
+        relicsFound: run.relics.length,
+        oath: run.oath,
+      },
+      choices: { ...run.choices },
+    },
+    ...(profile.pastRuns ?? []),
+  ];
+
+  checkEndingAchievements(profile, ending);
 }
 
 function advance(profile, nodeId) {
@@ -315,6 +365,8 @@ export function recordBattleResult(nodeId, result, summary = {}) {
     oathResolved: nodeId !== "node-3" || !!run.oath,
   };
   run.ashes += ashesReward;
+  checkBattleAchievements(profile, summary);
+  checkCollectionAchievements(profile);
   if (node.kind === "elite") {
     const relicId = randomOptions(
       run,
@@ -369,6 +421,7 @@ export function settleChapter(nodeId, choiceId) {
   run.rewards[nodeId] = choice.rewardId;
   pending.storyResolved = true;
   pending.choiceId = choiceId;
+  checkStoryAchievements(profile, nodeId, choiceId);
   finishSettlement(profile);
 
   return save(profile);
@@ -595,6 +648,14 @@ export function useService(nodeId, action, options = {}) {
     };
   }
   save(profile);
+
+  const spent = before.ashes - run.ashes;
+  if (spent > 0) {
+    const achievements = profile.achievements ?? {};
+    const totalSpent = (achievements.progress?.maxAshesSpent ?? 0) + spent;
+    checkSpendingAchievements(profile, totalSpent);
+    save(profile);
+  }
 
   return { ok: true };
 }
