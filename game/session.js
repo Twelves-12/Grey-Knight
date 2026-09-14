@@ -27,6 +27,7 @@ export const GAME_PAGES = {
   "/game/settlement": "../js/settlement.js",
   "/game/cards": "../js/cards.js",
   "/game/records": "../js/records.js",
+  "/game/arsenal": "../js/arsenal.js",
   "/game/rules": null,
 };
 

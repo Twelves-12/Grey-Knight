@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grey Knight · 卡组与战具</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/cards.css" />
+    <link rel="stylesheet" href="/css/journey.css" />
+    <style>
+      .arsenal-page {
+        padding: clamp(28px, 5vw, 64px) clamp(18px, 5vw, 72px);
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .arsenal-topline {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--site-border);
+        margin-bottom: 32px;
+      }
+
+      .arsenal-topline a {
+        color: var(--site-muted);
+        font-size: 14px;
+        text-decoration: none;
+      }
+
+      .arsenal-topline a:hover {
+        color: var(--site-accent);
+      }
+
+      .arsenal-module {
+        margin-bottom: 48px;
+      }
+
+      .arsenal-module-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .arsenal-module-header .eyebrow {
+        color: var(--site-accent);
+        font-size: 10px;
+        letter-spacing: 0.24em;
+      }
+
+      .arsenal-module-header h2 {
+        margin: 8px 0;
+        font-size: clamp(28px, 4vw, 40px);
+        letter-spacing: 0.08em;
+      }
+
+      .arsenal-meta {
+        color: var(--site-muted);
+        font-size: 13px;
+      }
+
+      .relic-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 12px;
+      }
+
+      .relic-card {
+        padding: 16px 20px;
+        border-radius: 8px;
+        background: var(--site-ground);
+        border: 1px solid var(--site-border);
+      }
+
+      .relic-card .relic-name {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+      }
+
+      .relic-card .relic-text {
+        font-size: 13px;
+        color: var(--site-muted);
+        line-height: 1.6;
+      }
+
+      .relic-card.oath {
+        border-color: var(--site-accent);
+      }
+
+      .arsenal-empty {
+        text-align: center;
+        padding: 40px 0;
+        color: var(--site-muted);
+        font-size: 15px;
+      }
+
+      .codex-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 14px;
+      }
+    </style>
+  </head>
+  <body hidden>
+    <div class="room site-room">
+      <site-header active="game"></site-header>
+      <main class="site-scroll arsenal-page">
+        <div class="arsenal-topline">
+          <a href="./records.html">← 返回旅途记录</a>
+          <span style="color:var(--site-muted);font-size:14px;">卡组与战具</span>
+        </div>
+
+        <!-- 卡组模块 -->
+        <section class="arsenal-module">
+          <div class="arsenal-module-header">
+            <div>
+              <p class="eyebrow">DECK</p>
+              <h2 class="site-title">当前卡组</h2>
+            </div>
+            <p id="deck-meta" class="arsenal-meta"></p>
+          </div>
+          <div id="deck-grid" class="codex-grid"></div>
+          <p id="deck-empty" class="arsenal-empty" hidden>当前没有卡组数据。开启新旅程后此处将显示你的牌组。</p>
+        </section>
+
+        <!-- 战具与誓约模块 -->
+        <section class="arsenal-module">
+          <div class="arsenal-module-header">
+            <div>
+              <p class="eyebrow">RELICS & OATH</p>
+              <h2 class="site-title">战具与誓约</h2>
+            </div>
+          </div>
+          <div id="relic-list" class="relic-list"></div>
+          <p id="relic-empty" class="arsenal-empty" hidden>尚未获得任何战具或誓约。</p>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/game/entry.js"></script>
+  </body>
+</html>
